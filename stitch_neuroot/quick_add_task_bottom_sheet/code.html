@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bloom - Quick Add Task</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&amp;family=Inter:wght@400;600&amp;family=Nunito+Sans:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed-variant": "#2c4e30",
+                      "surface-variant": "#e4e2e1",
+                      "surface-dim": "#dcd9d9",
+                      "primary-container": "#f6c945",
+                      "background": "#fcf9f8",
+                      "surface-container-highest": "#e4e2e1",
+                      "on-primary-container": "#6d5400",
+                      "on-primary-fixed-variant": "#584400",
+                      "on-tertiary-container": "#5d4d8e",
+                      "bloom-red": "#E05C5C",
+                      "on-surface-variant": "#4e4634",
+                      "inverse-on-surface": "#f3f0f0",
+                      "primary-fixed": "#ffdf90",
+                      "surface-container": "#f0eded",
+                      "on-tertiary-fixed": "#200d4e",
+                      "secondary-fixed": "#c5edc4",
+                      "secondary": "#446647",
+                      "outline-variant": "#d1c5ae",
+                      "on-error-container": "#93000a",
+                      "surface-bright": "#fcf9f8",
+                      "bloom-red-bg": "#FFECEC",
+                      "primary-fixed-dim": "#eec13e",
+                      "on-surface": "#1b1c1c",
+                      "tertiary-fixed-dim": "#cebdff",
+                      "surface-container-high": "#eae7e7",
+                      "primary": "#755b00",
+                      "error-container": "#ffdad6",
+                      "bloom-night-card": "#272420",
+                      "tertiary": "#645495",
+                      "on-secondary-fixed": "#002108",
+                      "on-primary": "#ffffff",
+                      "bloom-cream-dark": "#F5EFE3",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed": "#241a00",
+                      "secondary-fixed-dim": "#a9d0a9",
+                      "on-background": "#1b1c1c",
+                      "bloom-cream": "#FFF9F1",
+                      "on-tertiary": "#ffffff",
+                      "bloom-white": "#FFFFFF",
+                      "secondary-container": "#c5edc4",
+                      "bloom-sage-dark": "#4CAF82",
+                      "on-tertiary-fixed-variant": "#4c3c7c",
+                      "bloom-sage-bg": "#EBF5EB",
+                      "bloom-lavender-bg": "#F0ECFF",
+                      "tertiary-container": "#d5c6ff",
+                      "surface-tint": "#755b00",
+                      "surface-container-low": "#f6f3f2",
+                      "bloom-night": "#1C1A16",
+                      "on-secondary-container": "#496d4c",
+                      "inverse-surface": "#303030",
+                      "tertiary-fixed": "#e8ddff",
+                      "inverse-primary": "#eec13e",
+                      "on-secondary": "#ffffff",
+                      "surface": "#fcf9f8",
+                      "on-error": "#ffffff",
+                      "bloom-yellow-soft": "#FFF3C4",
+                      "error": "#ba1a1a",
+                      "outline": "#7f7662",
+                      "bloom-amber": "#F5A623",
+                      "bloom-coral": "#FF8A65",
+                      "bloom-charcoal-soft": "#5A5A5A"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "screen-padding": "20px",
+                      "height-status-bar": "44px",
+                      "height-bottom-nav": "72px",
+                      "gap-section": "20px",
+                      "card-padding": "16px",
+                      "height-top-bar": "56px",
+                      "gap-card": "10px"
+              },
+              "fontFamily": {
+                      "screen-title": [
+                              "Sora"
+                      ],
+                      "display-hero": [
+                              "Sora"
+                      ],
+                      "body-ui": [
+                              "Inter"
+                      ],
+                      "stats-lg": [
+                              "Sora"
+                      ],
+                      "mascot-speech": [
+                              "Nunito Sans"
+                      ],
+                      "section-heading": [
+                              "Sora"
+                      ],
+                      "micro-label": [
+                              "Inter"
+                      ],
+                      "motivational-quote": [
+                              "Nunito Sans"
+                      ]
+              },
+              "fontSize": {
+                      "screen-title": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-hero": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-ui": [
+                              "15px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "stats-lg": [
+                              "28px",
+                              {
+                                      "lineHeight": "1",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "mascot-speech": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "section-heading": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "micro-label": [
+                              "11px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.08em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "motivational-quote": [
+                              "15px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-bloom-cream text-on-background font-body-ui h-screen overflow-hidden flex justify-center w-full relative">
+<!-- Mock Background (Home Dashboard) -->
+<div class="w-full max-w-[390px] h-full relative bg-bloom-cream flex flex-col">
+<!-- Top App Bar -->
+<header class="bg-bloom-cream text-primary font-screen-title text-screen-title font-section-heading text-section-heading fixed top-0 w-full z-10 flat no shadows flex justify-between items-center h-height-top-bar px-screen-padding w-full max-w-[390px]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container overflow-hidden" data-alt="A small, cute, stylized plant sprout mascot smiling warmly, acting as an avatar in a clean, modern UI header. Soft light lighting, cream background.">
+<img alt="Bloom Logo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZztSp9O-XV6AbJ8HXR8Tvw4V8QhG_z7DHNh4JseY_20U_2UNhYZPwHtW64oR2DBC12COibzgK89-X1o7e1sjYDRXqLpZYmpWB8fIERWUJvQXG07xa9O_aiJK7Ra4RmgB2NrfguaZua-MwQFEcP8c1YdxmeMSaeORaAvgwIwwRjYo-w2ucnjSbvsaMh0nWYel_1ZlnFd71a8yG0MfAKJR5JkQZ3vep1JhFmNtvLgTdExyK6LXQHJmQMln-3QjL4rGoQmxcLZ_ZMlg"/>
+</div>
+<h1 class="font-display-hero text-screen-title text-primary">Bloom</h1>
+</div>
+<button aria-label="Notifications" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-bloom-cream-dark transition-colors text-on-surface-variant active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<!-- Dummy Content -->
+<main class="flex-1 px-screen-padding pt-[80px] pb-[100px] overflow-y-auto space-y-gap-section">
+<section>
+<h2 class="font-section-heading text-section-heading text-on-surface mb-gap-card">Today's Focus</h2>
+<div class="bg-bloom-white rounded-[20px] p-card-padding border border-bloom-cream-dark">
+<p class="font-body-ui text-body-ui text-outline">You have 3 tasks pending today.</p>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Shell (Behind overlay) -->
+<nav class="bg-bloom-white text-primary font-micro-label text-micro-label font-display-hero text-primary fixed bottom-0 w-full max-w-[390px] z-10 rounded-t-[24px] bg-bloom-white border-t border-bloom-cream-dark shadow-sm flex justify-around items-center h-height-bottom-nav px-2 pb-safe w-full">
+<button class="flex flex-col items-center justify-center text-outline px-4 py-1 hover:bg-bloom-sage-bg active:scale-90 transition-transform duration-150 group">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary-container transition-colors" data-icon="home">home</span>
+<span>Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline px-4 py-1 hover:bg-bloom-sage-bg active:scale-90 transition-transform duration-150 group">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary-container transition-colors" data-icon="calendar_today">calendar_today</span>
+<span>Planner</span>
+</button>
+<!-- Mock Add FAB in Center -->
+<button class="w-12 h-12 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center shadow-sm -translate-y-4 border-4 border-bloom-cream z-20">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline px-4 py-1 hover:bg-bloom-sage-bg active:scale-90 transition-transform duration-150 group">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary-container transition-colors" data-icon="insights">insights</span>
+<span>Insights</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline px-4 py-1 hover:bg-bloom-sage-bg active:scale-90 transition-transform duration-150 group">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary-container transition-colors" data-icon="person">person</span>
+<span>Profile</span>
+</button>
+</nav>
+<!-- Overlay -->
+<div class="absolute inset-0 bg-black/50 z-40"></div>
+<!-- Bottom Sheet Modal -->
+<div class="absolute bottom-0 w-full max-w-[390px] bg-bloom-white rounded-t-[28px] z-50 flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.1)] pb-8 transform transition-transform translate-y-0" style="height: 65%;">
+<!-- Drag Handle -->
+<div class="w-full flex justify-center pt-3 pb-2">
+<div class="w-[40px] h-[4px] rounded-full bg-[#E0D8D0]"></div>
+</div>
+<!-- Sheet Header -->
+<div class="flex justify-between items-center px-screen-padding pb-4">
+<h2 class="font-section-heading text-section-heading text-[#2B2B2B]">Quick Add Task</h2>
+<button aria-label="Close" class="w-[32px] h-[32px] rounded-full bg-bloom-cream-dark flex items-center justify-center text-outline hover:bg-[#E0D8D0] transition-colors">
+<span class="material-symbols-outlined text-lg leading-none" data-icon="close">close</span>
+</button>
+</div>
+<!-- Scrollable Content Area -->
+<div class="flex-1 overflow-y-auto px-screen-padding space-y-6">
+<!-- 1. Task Name Input -->
+<div class="relative">
+<input class="w-full bg-transparent border-0 border-b-[1.5px] border-[#F0E8DC] px-0 py-3 font-body-ui text-body-ui text-on-surface placeholder:text-[#C8C0B8] focus:ring-0 focus:border-primary-container transition-colors" placeholder="What do you need to do?" type="text"/>
+</div>
+<!-- 2. Subject Selector -->
+<div class="space-y-3">
+<label class="font-micro-label text-micro-label text-outline uppercase tracking-wider block">SUBJECT</label>
+<div class="flex gap-2 overflow-x-auto pb-2 -mx-screen-padding px-screen-padding hide-scrollbar">
+<button class="shrink-0 px-4 py-[6px] rounded-full bg-[#D97B45]/10 text-[#D97B45] font-micro-label text-micro-label font-bold border border-[#D97B45]/20">DSA</button>
+<button class="shrink-0 px-4 py-[6px] rounded-full bg-[#C8B6FF]/10 text-[#5D4D8E] font-micro-label text-micro-label font-bold border border-[#C8B6FF]/20">CN</button>
+<button class="shrink-0 px-4 py-[6px] rounded-full bg-bloom-sage-bg text-bloom-sage-dark font-micro-label text-micro-label font-bold border border-bloom-sage-dark/20">OS</button>
+<button class="shrink-0 px-4 py-[6px] rounded-full bg-bloom-yellow-soft text-bloom-amber font-micro-label text-micro-label font-bold border border-bloom-amber/20">EMFT</button>
+<button class="shrink-0 px-4 py-[6px] rounded-full bg-[#F48FB1]/10 text-[#D81B60] font-micro-label text-micro-label font-bold border border-[#F48FB1]/20">DBMS</button>
+<button class="shrink-0 px-3 py-[6px] rounded-full bg-bloom-cream-dark text-outline font-micro-label text-micro-label border border-transparent hover:border-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px]" data-icon="add">add</span>
+</button>
+</div>
+</div>
+<!-- 3. Due Date & Time -->
+<div class="flex gap-3">
+<button class="flex-1 flex items-center gap-2 bg-[#F5F0E8] rounded-[12px] px-3 py-[10px] text-on-surface-variant font-body-ui text-[14px]">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="calendar_today">calendar_today</span>
+<span>Today, May 15</span>
+</button>
+<button class="flex-1 flex items-center gap-2 bg-[#F5F0E8] rounded-[12px] px-3 py-[10px] text-on-surface-variant font-body-ui text-[14px]">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="schedule">schedule</span>
+<span>11:59 PM</span>
+</button>
+</div>
+<!-- 4. Priority -->
+<div class="space-y-3">
+<label class="font-micro-label text-micro-label text-outline uppercase tracking-wider block">PRIORITY</label>
+<div class="flex gap-2">
+<button class="flex-1 py-2 rounded-full bg-bloom-red-bg text-bloom-red font-body-ui text-[13px] font-semibold border border-bloom-red/20 transition-all">High</button>
+<button class="flex-1 py-2 rounded-full bg-[#FFF8E8] text-[#D49800] font-body-ui text-[13px] font-medium border border-transparent transition-all">Medium</button>
+<button class="flex-1 py-2 rounded-full bg-bloom-sage-bg text-bloom-sage-dark font-body-ui text-[13px] font-medium border border-transparent transition-all">Low</button>
+</div>
+</div>
+<!-- 5. AI Breakdown Toggle -->
+<div class="bg-bloom-cream-dark/50 rounded-[16px] p-4 flex items-center justify-between border border-[#F0E8DC]">
+<div class="flex-1 pr-4">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[14px] leading-none">✨</span>
+<span class="font-body-ui text-[13px] font-semibold text-on-surface">Let AI break this into subtasks</span>
+</div>
+<p class="font-mascot-speech text-[12px] text-outline">Sprout will suggest step-by-step subtasks</p>
+</div>
+<!-- Custom Toggle Switch (ON state) -->
+<button aria-pressed="true" class="w-[44px] h-[24px] rounded-full bg-primary-container relative flex items-center px-[2px] transition-colors">
+<div class="w-[20px] h-[20px] rounded-full bg-bloom-white shadow-sm absolute right-[2px] transition-all"></div>
+</button>
+</div>
+</div>
+<!-- SAVE BUTTON Fixed at bottom of sheet -->
+<div class="px-screen-padding pt-4 pb-2 bg-bloom-white">
+<button class="w-full h-[52px] rounded-[16px] bg-primary-container text-on-primary-container font-section-heading text-[15px] flex items-center justify-center gap-2 shadow-sm hover:bg-primary-fixed-dim transition-colors active:scale-[0.98]">
+<span class="text-[16px]">✏️</span> Add Task
+                </button>
+</div>
+</div>
+</div>
+<style>
+        /* Utility to hide scrollbar but keep functionality */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</body></html>

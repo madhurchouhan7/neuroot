@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bloom - Exam Week Mode</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Nunito+Sans:wght@400;700&amp;family=Sora:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#fcf9f8",
+                        "bloom-red-bg": "#FFECEC",
+                        "on-surface-variant": "#4e4634",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#dcd9d9",
+                        "bloom-sage-bg": "#EBF5EB",
+                        "surface-bright": "#fcf9f8",
+                        "tertiary-fixed": "#e8ddff",
+                        "inverse-on-surface": "#f3f0f0",
+                        "outline-variant": "#d1c5ae",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#645495",
+                        "surface-variant": "#e4e2e1",
+                        "bloom-cream-dark": "#F5EFE3",
+                        "bloom-cream": "#FFF9F1",
+                        "bloom-amber": "#F5A623",
+                        "on-background": "#1b1c1c",
+                        "secondary": "#446647",
+                        "bloom-coral": "#FF8A65",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#eec13e",
+                        "bloom-sage-dark": "#4CAF82",
+                        "surface-container-highest": "#e4e2e1",
+                        "bloom-lavender-bg": "#F0ECFF",
+                        "error-container": "#ffdad6",
+                        "bloom-red": "#E05C5CD",
+                        "secondary-fixed-dim": "#a9d0a9",
+                        "secondary-fixed": "#c5edc4",
+                        "surface-container-low": "#f6f3f2",
+                        "surface-tint": "#755b00",
+                        "on-tertiary-container": "#5d4d8e",
+                        "inverse-surface": "#303030",
+                        "background": "#fcf9f8",
+                        "on-tertiary-fixed-variant": "#4c3c7c",
+                        "bloom-yellow-soft": "#FFF3C4",
+                        "surface-container": "#f0eded",
+                        "on-tertiary-fixed": "#200d4e",
+                        "bloom-charcoal-soft": "#5A5A5A",
+                        "primary": "#755b00",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#002108",
+                        "on-primary-fixed": "#241a00",
+                        "bloom-night-card": "#272420",
+                        "inverse-primary": "#eec13e",
+                        "tertiary-container": "#d5c6ff",
+                        "on-primary-fixed-variant": "#584400",
+                        "primary-container": "#f6c945",
+                        "outline": "#7f7662",
+                        "error": "#ba1a1a",
+                        "on-surface": "#1b1c1c",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#eae7e7",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#2c4e30",
+                        "on-primary-container": "#6d5400",
+                        "bloom-white": "#FFFFFF",
+                        "tertiary-fixed-dim": "#cebdff",
+                        "on-secondary-container": "#496d4c",
+                        "primary-fixed": "#ffdf90",
+                        "secondary-container": "#c5edc4",
+                        "bloom-night": "#1C1A16"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-padding": "16px",
+                        "height-top-bar": "56px",
+                        "height-bottom-nav": "72px",
+                        "screen-padding": "20px",
+                        "height-status-bar": "44px",
+                        "gap-section": "20px",
+                        "gap-card": "10px"
+                    },
+                    "fontFamily": {
+                        "motivational-quote": ["Nunito Sans"],
+                        "display-hero": ["Sora"],
+                        "micro-label": ["Inter"],
+                        "stats-lg": ["Sora"],
+                        "mascot-speech": ["Nunito Sans"],
+                        "body-ui": ["Inter"],
+                        "screen-title": ["Sora"],
+                        "section-heading": ["Sora"]
+                    },
+                    "fontSize": {
+                        "motivational-quote": ["15px", { "lineHeight": "1.4", "fontWeight": "700" }],
+                        "display-hero": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "micro-label": ["11px", { "lineHeight": "1", "letterSpacing": "0.08em", "fontWeight": "600" }],
+                        "stats-lg": ["28px", { "lineHeight": "1", "fontWeight": "800" }],
+                        "mascot-speech": ["14px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-ui": ["15px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "screen-title": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "section-heading": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface font-body-ui text-body-ui text-on-surface min-h-screen pb-[90px]">
+<!-- Top Banner -->
+<header class="bg-tertiary rounded-b-[24px] px-screen-padding pt-12 pb-6 flex justify-between items-center shadow-sm">
+<div class="flex flex-col gap-1">
+<span class="font-micro-label text-micro-label text-on-tertiary opacity-80 uppercase tracking-widest">EXAM WEEK MODE</span>
+<h1 class="font-screen-title text-screen-title text-on-tertiary mb-1">Finals Week 🎯</h1>
+<p class="font-mascot-speech text-mascot-speech text-on-tertiary opacity-80 max-w-[220px]">Sprout is in focused mode. Let's finish strong.</p>
+</div>
+<div class="w-16 h-16 flex-shrink-0 relative">
+<img alt="Sprout Mascot Focused" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0uijp9S9dJYal-6Mn8efoiQiqHs5_pBbc9XeEgTSnfTr1U1zJOP8ajfIZ-bMygI5rNAW7Nx22cnWUQL6seLjwuL5l7syEcZB4v6fScYN6TxgCP3AQJAc1QpBMNX36jrCgYiLPKWJ7pT1c7MR-XxShbfZp3kWnN1QXRZzPq3Xve325oyGtU7qIqr5X2acqqMTjBgdupaGlrTiz1_UMZQsQ0YKw6ftswbHA1UsKjVogFabNt8qDF5MJk30tQ"/>
+</div>
+</header>
+<main class="px-screen-padding py-gap-section flex flex-col gap-gap-section">
+<!-- Exam Countdown List -->
+<section class="flex flex-col gap-gap-card">
+<h2 class="font-micro-label text-micro-label text-outline uppercase mb-1">YOUR EXAMS</h2>
+<!-- Card 1 (Urgent) -->
+<div class="bg-bloom-white rounded-[20px] p-card-padding flex items-center justify-between border-l-[4px] border-l-error shadow-sm">
+<div class="flex flex-col gap-2">
+<div class="inline-flex items-center w-max px-2 py-1 bg-bloom-red-bg rounded-full gap-1">
+<span class="material-symbols-outlined text-[12px] text-error">timer</span>
+<span class="font-micro-label text-micro-label text-error">1 DAY LEFT</span>
+</div>
+<h3 class="font-section-heading text-section-heading text-on-surface leading-tight">Computer Networks</h3>
+<p class="font-body-ui text-body-ui text-on-surface-variant text-[13px]">Tomorrow · 10:00 AM · Hall B</p>
+</div>
+<!-- Progress Ring Mockup -->
+<div class="relative w-12 h-12 flex items-center justify-center flex-shrink-0">
+<svg class="w-full h-full -rotate-90" viewbox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+<circle class="stroke-surface-container-highest" cx="18" cy="18" fill="none" r="16" stroke-dasharray="100 100" stroke-linecap="round" stroke-width="3"></circle>
+<circle class="stroke-error" cx="18" cy="18" fill="none" r="16" stroke-dasharray="60 100" stroke-linecap="round" stroke-width="3"></circle>
+</svg>
+<span class="absolute font-micro-label text-micro-label text-error">60%</span>
+</div>
+</div>
+<!-- Card 2 (This Week) -->
+<div class="bg-bloom-white rounded-[20px] p-card-padding flex items-center justify-between shadow-sm">
+<div class="flex flex-col gap-2">
+<div class="inline-flex items-center w-max px-2 py-1 bg-surface rounded-full gap-1 border border-bloom-amber">
+<span class="font-micro-label text-micro-label text-bloom-amber">3 DAYS</span>
+</div>
+<h3 class="font-section-heading text-section-heading text-on-surface leading-tight">Data Structures</h3>
+</div>
+</div>
+<!-- Card 3 (Upcoming) -->
+<div class="bg-bloom-white rounded-[20px] p-card-padding flex items-center justify-between shadow-sm">
+<div class="flex flex-col gap-2">
+<div class="inline-flex items-center w-max px-2 py-1 bg-surface rounded-full gap-1 border border-bloom-sage-dark">
+<span class="font-micro-label text-micro-label text-bloom-sage-dark">5 DAYS</span>
+</div>
+<h3 class="font-section-heading text-section-heading text-on-surface leading-tight">Operating Systems</h3>
+</div>
+</div>
+</section>
+<!-- Focus Today Section -->
+<section class="bg-bloom-white rounded-[20px] p-card-padding shadow-sm flex flex-col gap-4">
+<div>
+<h2 class="font-section-heading text-section-heading text-on-surface">Today's Focus Plan</h2>
+<p class="font-body-ui text-body-ui text-on-surface-variant text-[13px] mt-1">Sprout's recommendation:</p>
+</div>
+<div class="flex flex-col gap-3">
+<label class="flex items-start gap-3 cursor-pointer group">
+<div class="mt-0.5 w-5 h-5 rounded-[6px] border-2 border-outline-variant flex items-center justify-center group-hover:border-primary transition-colors"></div>
+<span class="font-body-ui text-body-ui text-on-surface pt-0.5">1. CN — Past 5 years papers (3h)</span>
+</label>
+<label class="flex items-start gap-3 cursor-pointer group">
+<div class="mt-0.5 w-5 h-5 rounded-[6px] border-2 border-outline-variant flex items-center justify-center group-hover:border-primary transition-colors"></div>
+<span class="font-body-ui text-body-ui text-on-surface pt-0.5">2. CN — Formula sheet review (30min)</span>
+</label>
+<label class="flex items-start gap-3 cursor-pointer group">
+<div class="mt-0.5 w-5 h-5 rounded-[6px] border-2 border-outline-variant flex items-center justify-center group-hover:border-primary transition-colors bg-bloom-sage-bg border-transparent">
+<span class="material-symbols-outlined text-[14px] text-bloom-sage-dark" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="font-body-ui text-body-ui text-outline line-through pt-0.5">3. Rest by 10 PM — trust your prep ☕</span>
+</label>
+</div>
+</section>
+<!-- Motivational Card -->
+<section class="bg-bloom-cream rounded-[20px] p-card-padding border border-bloom-cream-dark flex items-center gap-4">
+<div class="w-14 h-14 flex-shrink-0">
+<img alt="Sprout offering gentle support" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0ugEJBpCzrD59yU1ApFo07zMls5blmYbFfzLV3Z97vb9ONZvQGf2reiTbVUAiILhjTGPpr5zWxHLNKPyF3J6qhkSPAwsvKrqQzRkXwG_eGREHO66R56Rlg_xVDkHfE8eFjPTU_axsUSAf1E_p4OVuqEWo2fCEjT7Ut-Sbm43APA9ZK4hVrEci0o1wgz8RY76woSlIIb2VDsyrAk83CPDxWtncJYAdepycHteD5xD2VO6GkJLQherqg80xSQ"/>
+</div>
+<p class="font-motivational-quote text-motivational-quote text-bloom-charcoal-soft">"Exam stress is real. Take it one hour at a time. You've prepared — trust yourself 🌱"</p>
+</section>
+</main>
+<!-- Bottom Navigation Component -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-height-bottom-nav px-2 pb-safe bg-bloom-white dark:bg-bloom-night shadow-[0_-4px_12px_rgba(90,90,90,0.08)] rounded-t-[24px]">
+<!-- Home (Inactive) -->
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant px-3 py-1 hover:bg-bloom-cream-dark dark:hover:bg-bloom-night-card rounded-[16px] transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1 text-[24px]">home</span>
+<span class="font-micro-label text-micro-label">Home</span>
+</button>
+<!-- Planner (Active) -->
+<button class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-[16px] px-3 py-1 transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1 text-[24px]" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+<span class="font-micro-label text-micro-label">Planner</span>
+</button>
+<!-- Focus (Inactive) -->
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant px-3 py-1 hover:bg-bloom-cream-dark dark:hover:bg-bloom-night-card rounded-[16px] transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1 text-[24px]">timer</span>
+<span class="font-micro-label text-micro-label">Focus</span>
+</button>
+<!-- Insights (Inactive) -->
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant px-3 py-1 hover:bg-bloom-cream-dark dark:hover:bg-bloom-night-card rounded-[16px] transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1 text-[24px]">analytics</span>
+<span class="font-micro-label text-micro-label">Insights</span>
+</button>
+<!-- Profile (Inactive) -->
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant px-3 py-1 hover:bg-bloom-cream-dark dark:hover:bg-bloom-night-card rounded-[16px] transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1 text-[24px]">person</span>
+<span class="font-micro-label text-micro-label">Profile</span>
+</button>
+</nav>
+</body></html>

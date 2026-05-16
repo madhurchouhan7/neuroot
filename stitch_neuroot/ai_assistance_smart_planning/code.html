@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bloom - AI Planner</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Nunito+Sans:wght@400;700&amp;family=Sora:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "bloom-cream": "#FFF9F1",
+                        "background": "#fcf9f8",
+                        "outline-variant": "#d1c5ae",
+                        "bloom-charcoal-soft": "#5A5A5A",
+                        "inverse-on-surface": "#f3f0f0",
+                        "bloom-sage-bg": "#EBF5EB",
+                        "on-error-container": "#93000a",
+                        "primary": "#755b00",
+                        "bloom-red-bg": "#FFECEC",
+                        "secondary": "#446647",
+                        "primary-fixed": "#ffdf90",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#584400",
+                        "on-tertiary": "#ffffff",
+                        "bloom-night-card": "#272420",
+                        "surface-dim": "#dcd9d9",
+                        "on-secondary-container": "#496d4c",
+                        "inverse-primary": "#eec13e",
+                        "on-background": "#1b1c1c",
+                        "surface": "#fcf9f8",
+                        "tertiary": "#645495",
+                        "on-tertiary-fixed": "#200d4e",
+                        "error-container": "#ffdad6",
+                        "bloom-coral": "#FF8A65",
+                        "on-tertiary-container": "#5d4d8e",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#cebdff",
+                        "inverse-surface": "#303030",
+                        "bloom-red": "#E05C5CD",
+                        "on-secondary-fixed": "#002108",
+                        "bloom-lavender-bg": "#F0ECFF",
+                        "surface-bright": "#fcf9f8",
+                        "bloom-white": "#FFFFFF",
+                        "on-primary-fixed": "#241a00",
+                        "surface-tint": "#755b00",
+                        "secondary-fixed-dim": "#a9d0a9",
+                        "secondary-container": "#c5edc4",
+                        "primary-container": "#f6c945",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#2c4e30",
+                        "on-primary-container": "#6d5400",
+                        "primary-fixed-dim": "#eec13e",
+                        "bloom-amber": "#F5A623",
+                        "on-surface-variant": "#4e4634",
+                        "tertiary-fixed": "#e8ddff",
+                        "bloom-night": "#1C1A16",
+                        "secondary-fixed": "#c5edc4",
+                        "tertiary-container": "#d5c6ff",
+                        "surface-container-highest": "#e4e2e1",
+                        "outline": "#7f7662",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#4c3c7c",
+                        "surface-variant": "#e4e2e1",
+                        "on-surface": "#1b1c1c",
+                        "bloom-yellow-soft": "#FFF3C4",
+                        "surface-container-low": "#f6f3f2",
+                        "surface-container": "#f0eded",
+                        "bloom-sage-dark": "#4CAF82",
+                        "bloom-cream-dark": "#F5EFE3",
+                        "surface-container-high": "#eae7e7",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "height-bottom-nav": "72px",
+                        "gap-card": "10px",
+                        "screen-padding": "20px",
+                        "gap-section": "20px",
+                        "card-padding": "16px",
+                        "height-status-bar": "44px",
+                        "height-top-bar": "56px"
+                    },
+                    "fontFamily": {
+                        "section-heading": ["Sora"],
+                        "micro-label": ["Inter"],
+                        "mascot-speech": ["Nunito Sans"],
+                        "motivational-quote": ["Nunito Sans"],
+                        "stats-lg": ["Sora"],
+                        "screen-title": ["Sora"],
+                        "display-hero": ["Sora"],
+                        "body-ui": ["Inter"]
+                    },
+                    "fontSize": {
+                        "section-heading": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "micro-label": ["11px", {"lineHeight": "1", "letterSpacing": "0.08em", "fontWeight": "600"}],
+                        "mascot-speech": ["14px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "motivational-quote": ["15px", {"lineHeight": "1.4", "fontWeight": "700"}],
+                        "stats-lg": ["28px", {"lineHeight": "1", "fontWeight": "800"}],
+                        "screen-title": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "screen-title-mobile": ["20px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "display-hero": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "body-ui": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F6F4FF; /* Custom spec background */
+        }
+    </style>
+</head>
+<body class="min-h-screen text-on-surface antialiased flex justify-center pb-height-bottom-nav md:pb-0">
+<div class="w-full max-w-[390px] relative bg-[#F6F4FF] shadow-2xl overflow-hidden flex flex-col">
+<!-- TopAppBar (Based on Shared Components JSON) -->
+<header class="bg-bloom-cream dark:bg-bloom-night text-primary dark:text-primary-fixed font-screen-title text-screen-title-mobile docked full-width top-0 flat no shadows flex justify-between items-center px-screen-padding h-height-top-bar w-full z-50">
+<button class="text-on-surface-variant dark:text-surface-variant hover:bg-bloom-cream-dark dark:hover:bg-bloom-night-card rounded-full transition-colors flex items-center justify-center w-10 h-10 active:scale-95 duration-150 ease-out">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title-mobile font-bold text-primary dark:text-primary-fixed flex-1 text-center truncate">AI Planner</h1>
+<button class="text-primary dark:text-primary-fixed hover:bg-bloom-cream-dark dark:hover:bg-bloom-night-card rounded-full transition-colors flex items-center justify-center w-10 h-10 active:scale-95 duration-150 ease-out">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 overflow-y-auto px-screen-padding py-gap-section flex flex-col gap-gap-section">
+<!-- INTRO CARD (Sprout + AI) -->
+<section class="bg-[#5B4BE8] rounded-[24px] p-5 shadow-lg relative overflow-hidden flex items-center gap-4">
+<div class="w-16 h-16 shrink-0 relative z-10">
+<img alt="" class="w-full h-full object-contain drop-shadow-md rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuPKboTAV5XyXWIK0VVm9ksa8etBOpBMcCDTK7vZnLBwIQUtyz5eHCTkfPA-EclOhxwA-ys5IkNIJCVt7erUue4sBzTyVRrCgJ-8OisgWA41g-s-zLi29-VfcS8nVn61Anud3vVeqZfVQwJm8MvVMfOKu3WBIk4XH22dYRep9bY_SiE09FRjGFLMFn2RBmfpoypX4JA0VjAkAYtOiumYSa1ZnNwdJwzX9YYmaIaM1zEqCpIF-2wR3vLK3wuKYHUoMAFrACBk3wLBw"/>
+</div>
+<div class="relative z-10 flex flex-col gap-2">
+<h2 class="font-section-heading text-bloom-white">Sprout AI</h2>
+<p class="font-body-ui text-[13px] text-bloom-white opacity-70 leading-snug">Your smart study planner. Tell me your syllabus and exams — I'll build your week.</p>
+<div class="flex flex-wrap gap-2 mt-1">
+<span class="bg-bloom-white/15 text-bloom-white text-[10px] font-semibold px-2 py-1 rounded-full whitespace-nowrap">✨ Auto roadmap</span>
+<span class="bg-bloom-white/15 text-bloom-white text-[10px] font-semibold px-2 py-1 rounded-full whitespace-nowrap">📅 Smart schedule</span>
+<span class="bg-bloom-white/15 text-bloom-white text-[10px] font-semibold px-2 py-1 rounded-full whitespace-nowrap">🔄 Rescheduling</span>
+</div>
+</div>
+<!-- Decorative subtle background element -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl"></div>
+</section>
+<!-- AI WEEK PLANNER CARD -->
+<section class="bg-bloom-white rounded-[20px] border border-[#EDE6FF] p-card-padding shadow-sm flex flex-col gap-4">
+<div class="flex justify-between items-center border-b border-bloom-cream-dark pb-3">
+<h3 class="font-section-heading text-[15px] text-[#2B2B2B]">AI-Generated Study Plan</h3>
+<span class="font-body-ui font-medium text-[12px] text-[#8B8070]">This Week</span>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Day 1 -->
+<div class="flex gap-3 items-start">
+<div class="w-10 text-center font-micro-label text-bloom-charcoal-soft pt-1">Mon</div>
+<div class="flex-1 bg-surface-container-low rounded-lg p-2 border-l-4 border-bloom-coral text-[13px] font-body-ui text-on-surface">
+                            DSA — Tree revision (1.5h)
+                        </div>
+</div>
+<!-- Day 2 -->
+<div class="flex gap-3 items-start">
+<div class="w-10 text-center font-micro-label text-bloom-charcoal-soft pt-1">Tue</div>
+<div class="flex-1 bg-surface-container-low rounded-lg p-2 border-l-4 border-[#9C82DB] text-[13px] font-body-ui text-on-surface">
+                            CN — Subnetting practice (2h)
+                        </div>
+</div>
+<!-- Day 3 -->
+<div class="flex gap-3 items-start">
+<div class="w-10 text-center font-micro-label text-bloom-charcoal-soft pt-1">Wed</div>
+<div class="flex-1 flex flex-col gap-2">
+<div class="bg-surface-container-low rounded-lg p-2 border-l-4 border-[#9C82DB] text-[13px] font-body-ui text-on-surface">
+                                CN — Full unit 3 revision (3h)
+                            </div>
+<div class="bg-surface-container-low rounded-lg p-2 border-l-4 border-bloom-amber text-[13px] font-body-ui text-on-surface">
+                                EMFT — Formula revision (1h)
+                            </div>
+<p class="text-[11px] font-medium text-error mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                                ⚠ CN exam Friday — heavy day
+                            </p>
+</div>
+</div>
+<!-- Day 4 -->
+<div class="flex gap-3 items-start">
+<div class="w-10 text-center font-micro-label text-bloom-charcoal-soft pt-1">Thu</div>
+<div class="flex-1 flex flex-col gap-2">
+<div class="bg-surface-container-low rounded-lg p-2 border-l-4 border-[#9C82DB] text-[13px] font-body-ui text-on-surface">
+                                CN — Past papers (2h)
+                            </div>
+<div class="bg-surface-container-low rounded-lg p-2 border-l-4 border-bloom-sage-dark text-[13px] font-body-ui text-on-surface">
+                                OS — Lab record (45min)
+                            </div>
+</div>
+</div>
+<!-- Day 5 -->
+<div class="flex gap-3 items-start">
+<div class="w-10 text-center font-micro-label text-bloom-charcoal-soft pt-1">Fri</div>
+<div class="flex-1 flex flex-col gap-2">
+<div class="bg-[#F0ECFF] rounded-lg p-2 border-l-4 border-[#5B4BE8] text-[13px] font-body-ui font-semibold text-[#200d4e] flex items-center gap-2">
+<span>🎯</span> CN Exam — Hall B, 10 AM
+                            </div>
+<p class="text-[12px] font-body-ui text-bloom-charcoal-soft italic pl-1">
+                                Light revision only — trust the prep
+                            </p>
+</div>
+</div>
+</div>
+</section>
+<!-- AI RESCHEDULING CARD -->
+<section class="bg-bloom-white rounded-[20px] border border-[#EDE6FF] p-card-padding shadow-sm flex flex-col gap-3">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-bloom-amber text-[18px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<h3 class="font-section-heading text-[14px] text-[#2B2B2B]">AI Rescheduling</h3>
+</div>
+<p class="font-body-ui text-[13px] text-on-surface-variant leading-relaxed">
+                    You missed DSA practice yesterday. Sprout has shifted it to tomorrow morning — want to confirm?
+                </p>
+<div class="flex gap-3 mt-2">
+<button class="flex-1 bg-bloom-yellow-soft text-on-primary-container font-section-heading text-[14px] py-2 rounded-xl transition-transform active:scale-95">
+                        Confirm ✓
+                    </button>
+<button class="flex-1 bg-transparent border border-bloom-cream-dark text-bloom-charcoal-soft font-section-heading text-[14px] py-2 rounded-xl transition-transform active:scale-95">
+                        Edit →
+                    </button>
+</div>
+</section>
+<!-- BURNOUT DETECTION CARD -->
+<section class="bg-[#FFF3E0] rounded-[20px] border border-[#FFE0B2] p-card-padding shadow-sm flex items-center gap-4">
+<div class="w-14 h-14 shrink-0">
+<img alt="" class="w-full h-full object-contain rounded-full drop-shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCc7BHfHC2iP3EGQjyaiMGXJktWbKuLISjGFsD7w_4ba5En7DCmpb5EHfMSD8APlB4oYTLPLfu-_DjbkCpr0a4Lwyk2r4PHTuY223v0X7slubBT5fMP59B4_sn4H8T7p8Rh6zT-ZsktCEUg9eufKOlOcRiQc1DSH60f4VVkTQYx8eGTTWoW81vfEZL46thW0jepFQIxFMWCvmHlrrZb8XRgrNKEcxjxKk6IRegb4DV-FiKJ-2yu52QlLunZNetd_uOUgGESanA2HgE"/>
+</div>
+<div class="flex-1 flex flex-col gap-1">
+<h4 class="font-mascot-speech text-[13px] text-on-surface">Sprout noticed...</h4>
+<p class="font-body-ui text-[12px] text-on-surface-variant leading-tight mb-2">
+                        You have 7 overdue tasks and studied late last 3 nights. Tomorrow should be a lighter day.
+                    </p>
+<button class="text-primary font-section-heading text-[12px] text-left hover:underline active:opacity-70 transition-opacity flex items-center gap-1 w-fit">
+                        Plan a lighter tomorrow <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Based on Shared Components JSON) -->
+<!-- Suppressed for desktop, visible on mobile -->
+<nav class="md:hidden bg-bloom-white dark:bg-bloom-night-card shadow-[0_-4px_20px_rgba(0,0,0,0.05)] shadow-lg docked full-width bottom-0 rounded-t-[24px] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 h-height-bottom-nav pb-safe">
+<button class="flex flex-col items-center justify-center text-bloom-charcoal-soft dark:text-on-surface-variant px-4 py-1.5 hover:bg-bloom-cream-dark dark:hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="font-micro-label text-micro-label mt-1">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-bloom-yellow-soft dark:bg-primary-container text-on-primary-container dark:text-on-primary-container rounded-xl px-4 py-1.5 transition-all duration-300 scale-90">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">event_note</span>
+<span class="font-micro-label text-micro-label mt-1 font-bold">Planner</span>
+</button>
+<button class="flex flex-col items-center justify-center text-bloom-charcoal-soft dark:text-on-surface-variant px-4 py-1.5 hover:bg-bloom-cream-dark dark:hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[24px]">timer</span>
+<span class="font-micro-label text-micro-label mt-1">Focus</span>
+</button>
+<button class="flex flex-col items-center justify-center text-bloom-charcoal-soft dark:text-on-surface-variant px-4 py-1.5 hover:bg-bloom-cream-dark dark:hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[24px]">analytics</span>
+<span class="font-micro-label text-micro-label mt-1">Insights</span>
+</button>
+<button class="flex flex-col items-center justify-center text-bloom-charcoal-soft dark:text-on-surface-variant px-4 py-1.5 hover:bg-bloom-cream-dark dark:hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<span class="font-micro-label text-micro-label mt-1">Profile</span>
+</button>
+</nav>
+<!-- Desktop Sidebar Fallback (Hidden on Mobile) -->
+<nav class="hidden md:flex flex-col w-[240px] bg-bloom-white border-r border-bloom-cream-dark h-full absolute left-[-240px]">
+<!-- Placeholder for desktop nav to maintain standard structure mentally, though not strictly required by prompt screen constraint -->
+</nav>
+</div>
+</body></html>

@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "826452164656",
+    "project_id": "neuroot-8dda8",
+    "storage_bucket": "neuroot-8dda8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:826452164656:android:3c898e340dc9b9873a6df5",
+        "android_client_info": {
+          "package_name": "com.madhurlabs.neuroot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "826452164656-8lr7k2g14b3qeo4t523l0u77n39tn8ri.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.madhurlabs.neuroot",
+            "certificate_hash": "a7008643189db2ed4756875d0c5a4f9dff697e7f"
+          }
+        },
+        {
+          "client_id": "826452164656-itd5pqs59hdv4s9rt4glf3cnfos0plnm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAF_DU8IY6SkdaCmnJifP__bOo38LtPlkU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "826452164656-itd5pqs59hdv4s9rt4glf3cnfos0plnm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "826452164656-f8poqos1p50piqkuaco7avq5vdl3tuo0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.madhurlabs.neuroot"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

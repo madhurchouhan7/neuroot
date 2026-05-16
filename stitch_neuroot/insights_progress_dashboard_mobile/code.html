@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bloom - Insights</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Nunito+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "bloom-red": "#E05C5CD",
+                        "on-primary-container": "#6d5400",
+                        "primary-fixed": "#ffdf90",
+                        "bloom-charcoal-soft": "#5A5A5A",
+                        "secondary": "#446647",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#eec13e",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-tint": "#755b00",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#f6c945",
+                        "on-error-container": "#93000a",
+                        "bloom-lavender-bg": "#F0ECFF",
+                        "secondary-container": "#c5edc4",
+                        "tertiary-container": "#d5c6ff",
+                        "on-secondary": "#ffffff",
+                        "bloom-cream-dark": "#F5EFE3",
+                        "background": "#fcf9f8",
+                        "surface-container-low": "#f6f3f2",
+                        "on-background": "#1b1c1c",
+                        "on-tertiary-container": "#5d4d8e",
+                        "surface-container": "#f0eded",
+                        "on-primary-fixed-variant": "#584400",
+                        "bloom-amber": "#F5A623",
+                        "bloom-sage-dark": "#4CAF82",
+                        "secondary-fixed": "#c5edc4",
+                        "surface": "#fcf9f8",
+                        "outline-variant": "#d1c5ae",
+                        "bloom-coral": "#FF8A65",
+                        "tertiary": "#645495",
+                        "bloom-sage-bg": "#EBF5EB",
+                        "primary": "#755b00",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#a9d0a9",
+                        "outline": "#7f7662",
+                        "bloom-night": "#1C1A16",
+                        "tertiary-fixed-dim": "#cebdff",
+                        "surface-dim": "#dcd9d9",
+                        "tertiary-fixed": "#e8ddff",
+                        "bloom-red-bg": "#FFECEC",
+                        "surface-container-highest": "#e4e2e1",
+                        "bloom-night-card": "#272420",
+                        "on-secondary-fixed-variant": "#2c4e30",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#496d4c",
+                        "on-primary-fixed": "#241a00",
+                        "inverse-primary": "#eec13e",
+                        "on-surface": "#1b1c1c",
+                        "bloom-white": "#FFFFFF",
+                        "inverse-surface": "#303030",
+                        "on-secondary-fixed": "#002108",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#4e4634",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#eae7e7",
+                        "surface-bright": "#fcf9f8",
+                        "bloom-yellow-soft": "#FFF3C4",
+                        "on-tertiary-fixed-variant": "#4c3c7c",
+                        "surface-variant": "#e4e2e1",
+                        "on-tertiary-fixed": "#200d4e",
+                        "bloom-cream": "#FFF9F1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "widget": "22px"
+                    },
+                    "spacing": {
+                        "gap-card": "10px",
+                        "height-top-bar": "56px",
+                        "gap-section": "20px",
+                        "height-bottom-nav": "72px",
+                        "card-padding": "16px",
+                        "screen-padding": "20px",
+                        "height-status-bar": "44px"
+                    },
+                    "fontFamily": {
+                        "stats-lg": ["Sora"],
+                        "body-ui": ["Inter"],
+                        "screen-title": ["Sora"],
+                        "motivational-quote": ["Nunito Sans"],
+                        "micro-label": ["Inter"],
+                        "display-hero": ["Sora"],
+                        "section-heading": ["Sora"],
+                        "mascot-speech": ["Nunito Sans"]
+                    },
+                    "fontSize": {
+                        "stats-lg": ["28px", { "lineHeight": "1", "fontWeight": "800" }],
+                        "body-ui": ["15px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "screen-title": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "screen-title-mobile": ["20px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "motivational-quote": ["15px", { "lineHeight": "1.4", "fontWeight": "700" }],
+                        "micro-label": ["11px", { "lineHeight": "1", "letterSpacing": "0.08em", "fontWeight": "600" }],
+                        "display-hero": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "section-heading": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "mascot-speech": ["14px", { "lineHeight": "1.2", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-bloom-cream text-on-surface font-body-ui antialiased min-h-screen pb-[92px]">
+<!-- TopAppBar -->
+<header class="docked full-width top-0 bg-bloom-cream dark:bg-bloom-night flex justify-between items-center px-screen-padding h-height-top-bar w-full z-50 sticky">
+<div class="flex items-center text-primary dark:text-primary-fixed">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</div>
+<div class="absolute left-1/2 -translate-x-1/2">
+<h1 class="font-screen-title text-screen-title-mobile font-bold text-primary dark:text-primary-fixed">Insights</h1>
+</div>
+<div class="flex items-center">
+<button class="flex items-center text-[#F6C945] font-body-ui text-[13px] font-medium bg-white px-3 py-1 rounded-full shadow-sm">
+                This Week <span class="material-symbols-outlined ml-1 text-[16px]">arrow_drop_down</span>
+</button>
+</div>
+</header>
+<main class="px-screen-padding flex flex-col gap-gap-section pt-4">
+<!-- Sprout Weekly Wrap Card -->
+<section class="bg-[#2B2B2B] rounded-[24px] p-5 shadow-lg relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-bloom-amber/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="font-section-heading text-section-heading text-bloom-white flex items-center gap-2">
+                        Sprout's Weekly Wrap <span class="text-xl">🌿</span>
+</h2>
+<p class="font-body-ui text-[12px] text-[#8B8070] mt-1">Week of May 11–17, 2026</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-4 mb-6">
+<div class="flex flex-col">
+<span class="font-micro-label text-micro-label text-[#8B8070] mb-1 uppercase tracking-wider">Focus</span>
+<span class="font-stats-lg text-stats-lg text-primary-container">8.2h</span>
+</div>
+<div class="flex flex-col">
+<span class="font-micro-label text-micro-label text-[#8B8070] mb-1 uppercase tracking-wider">Attend</span>
+<span class="font-stats-lg text-stats-lg text-secondary-container">79.3%</span>
+</div>
+<div class="flex flex-col">
+<span class="font-micro-label text-micro-label text-[#8B8070] mb-1 uppercase tracking-wider">Tasks</span>
+<span class="font-stats-lg text-stats-lg text-tertiary-container">12</span>
+</div>
+</div>
+<div class="bg-bloom-night-card rounded-xl p-4 flex items-start gap-3 border border-[#3A3A3A]">
+<div class="w-8 h-8 rounded-full bg-bloom-sage-bg flex items-center justify-center shrink-0">
+<span class="text-lg">🌱</span>
+</div>
+<p class="font-mascot-speech text-mascot-speech text-white/70 italic">"You studied 2 more hours than last week. That's growth 🌱"</p>
+</div>
+</section>
+<!-- Study Time Chart -->
+<section class="bg-bloom-white rounded-widget p-5 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-bloom-cream-dark">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-section-heading text-section-heading text-bloom-charcoal-soft">Study Time</h3>
+<span class="material-symbols-outlined text-bloom-charcoal-soft/50">more_horiz</span>
+</div>
+<div class="flex items-end justify-between h-40 gap-2 pb-2">
+<!-- Mon -->
+<div class="flex flex-col items-center gap-2 flex-1">
+<div class="w-full bg-[#A8CFA8] rounded-t-lg h-[40%]"></div>
+<span class="font-micro-label text-micro-label text-bloom-charcoal-soft/60">M</span>
+</div>
+<!-- Tue -->
+<div class="flex flex-col items-center gap-2 flex-1">
+<div class="w-full bg-[#A8CFA8] rounded-t-lg h-[60%]"></div>
+<span class="font-micro-label text-micro-label text-bloom-charcoal-soft/60">T</span>
+</div>
+<!-- Wed -->
+<div class="flex flex-col items-center gap-2 flex-1 relative">
+<div class="absolute -top-6 text-[10px]">🌱</div>
+<div class="w-full bg-[#A8CFA8] rounded-t-lg h-[20%] opacity-50"></div>
+<span class="font-micro-label text-micro-label text-bloom-charcoal-soft/60">W</span>
+</div>
+<!-- Thu -->
+<div class="flex flex-col items-center gap-2 flex-1 relative">
+<div class="absolute -top-8 bg-bloom-night text-white font-micro-label text-[10px] px-2 py-1 rounded-md shadow-md whitespace-nowrap">3.2h</div>
+<div class="w-full bg-[#F6C945] rounded-t-lg h-[90%] shadow-[0_0_15px_rgba(246,201,69,0.4)]"></div>
+<span class="font-micro-label text-micro-label text-bloom-charcoal-soft font-bold">T</span>
+</div>
+<!-- Fri -->
+<div class="flex flex-col items-center gap-2 flex-1">
+<div class="w-full bg-[#A8CFA8] rounded-t-lg h-[50%]"></div>
+<span class="font-micro-label text-micro-label text-bloom-charcoal-soft/60">F</span>
+</div>
+<!-- Sat -->
+<div class="flex flex-col items-center gap-2 flex-1">
+<div class="w-full bg-[#A8CFA8] rounded-t-lg h-[30%]"></div>
+<span class="font-micro-label text-micro-label text-bloom-charcoal-soft/60">S</span>
+</div>
+<!-- Sun -->
+<div class="flex flex-col items-center gap-2 flex-1">
+<div class="w-full bg-[#A8CFA8] rounded-t-lg h-[45%]"></div>
+<span class="font-micro-label text-micro-label text-bloom-charcoal-soft/60">S</span>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-2 gap-4">
+<!-- Attendance Ring Chart -->
+<section class="bg-bloom-white rounded-widget p-5 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-bloom-cream-dark flex flex-col items-center justify-center min-h-[180px]">
+<h3 class="font-section-heading text-[15px] font-semibold text-bloom-charcoal-soft w-full mb-4">Attendance</h3>
+<div class="relative w-24 h-24">
+<!-- SVG Donut Chart Mockup -->
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<!-- Background ring -->
+<path class="text-surface-container-highest" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4"></path>
+<!-- DSA Orange -->
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F5A623" stroke-dasharray="30, 100" stroke-width="4"></path>
+<!-- CN Lavender -->
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#d5c6ff" stroke-dasharray="25, 100" stroke-dashoffset="-30" stroke-width="4"></path>
+<!-- OS Green -->
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#4CAF82" stroke-dasharray="20, 100" stroke-dashoffset="-55" stroke-width="4"></path>
+<!-- EMFT Red Warning -->
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E05C5CD" stroke-dasharray="15, 100" stroke-dashoffset="-75" stroke-width="4"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center flex-col">
+<span class="font-stats-lg text-[16px] font-bold text-bloom-charcoal-soft">79%</span>
+</div>
+</div>
+</section>
+<!-- Focus Streaks Card -->
+<section class="bg-bloom-white rounded-widget p-5 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-bloom-cream-dark">
+<h3 class="font-section-heading text-[15px] font-semibold text-bloom-charcoal-soft mb-4">Focus Streaks</h3>
+<div class="grid grid-cols-7 gap-1">
+<!-- Week 1 -->
+<div class="w-full aspect-square rounded-sm bg-[#FFF3C4]"></div>
+<div class="w-full aspect-square rounded-sm bg-[#f6c945]"></div>
+<div class="w-full aspect-square rounded-sm bg-surface-container-high"></div>
+<div class="w-full aspect-square rounded-sm bg-[#f6c945]"></div>
+<div class="w-full aspect-square rounded-sm bg-[#FFF3C4]"></div>
+<div class="w-full aspect-square rounded-sm bg-surface-container-high"></div>
+<div class="w-full aspect-square rounded-sm bg-surface-container-high"></div>
+<!-- Week 2 -->
+<div class="w-full aspect-square rounded-sm bg-[#f6c945]"></div>
+<div class="w-full aspect-square rounded-sm bg-[#f6c945]"></div>
+<div class="w-full aspect-square rounded-sm bg-[#f6c945]"></div>
+<div class="w-full aspect-square rounded-sm bg-[#eec13e]"></div>
+<div class="w-full aspect-square rounded-sm bg-[#f6c945]"></div>
+<div class="w-full aspect-square rounded-sm bg-[#FFF3C4]"></div>
+<div class="w-full aspect-square rounded-sm bg-surface-container-high"></div>
+<!-- Week 3 -->
+<div class="w-full aspect-square rounded-sm bg-surface-container-high"></div>
+<div class="w-full aspect-square rounded-sm bg-[#FFF3C4]"></div>
+<div class="w-full aspect-square rounded-sm bg-[#f6c945]"></div>
+<div class="w-full aspect-square rounded-sm bg-[#f6c945]"></div>
+<div class="w-full aspect-square rounded-sm bg-surface-container-high"></div>
+<div class="w-full aspect-square rounded-sm bg-surface-container-high"></div>
+<div class="w-full aspect-square rounded-sm bg-surface-container-high"></div>
+<!-- Week 4 -->
+<div class="w-full aspect-square rounded-sm bg-[#f6c945]"></div>
+<div class="w-full aspect-square rounded-sm bg-[#eec13e]"></div>
+<div class="w-full aspect-square rounded-sm bg-surface-container-high"></div>
+<div class="w-full aspect-square rounded-sm bg-[#f6c945]"></div>
+<div class="w-full aspect-square rounded-sm bg-surface-container-high"></div>
+<div class="w-full aspect-square rounded-sm bg-surface-container-high"></div>
+<div class="w-full aspect-square rounded-sm bg-surface-container-high"></div>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 h-height-bottom-nav pb-safe bg-bloom-white dark:bg-bloom-night-card shadow-[0_-4px_20px_rgba(0,0,0,0.05)] rounded-t-[24px]">
+<div class="flex flex-col items-center justify-center text-bloom-charcoal-soft dark:text-on-surface-variant px-4 py-1.5 hover:bg-bloom-cream-dark dark:hover:bg-surface-container-highest transition-colors rounded-xl">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-micro-label text-micro-label mt-1">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-bloom-charcoal-soft dark:text-on-surface-variant px-4 py-1.5 hover:bg-bloom-cream-dark dark:hover:bg-surface-container-highest transition-colors rounded-xl">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+<span class="font-micro-label text-micro-label mt-1">Planner</span>
+</div>
+<div class="flex flex-col items-center justify-center text-bloom-charcoal-soft dark:text-on-surface-variant px-4 py-1.5 hover:bg-bloom-cream-dark dark:hover:bg-surface-container-highest transition-colors rounded-xl">
+<span class="material-symbols-outlined" data-icon="timer">timer</span>
+<span class="font-micro-label text-micro-label mt-1">Focus</span>
+</div>
+<!-- ACTIVE -->
+<div class="flex flex-col items-center justify-center bg-bloom-yellow-soft dark:bg-primary-container text-on-primary-container dark:text-on-primary-container rounded-xl px-4 py-1.5 transition-all duration-300 scale-90">
+<span class="material-symbols-outlined font-bold" data-icon="analytics" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-micro-label text-micro-label mt-1 font-bold">Insights</span>
+</div>
+<div class="flex flex-col items-center justify-center text-bloom-charcoal-soft dark:text-on-surface-variant px-4 py-1.5 hover:bg-bloom-cream-dark dark:hover:bg-surface-container-highest transition-colors rounded-xl">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-micro-label text-micro-label mt-1">Profile</span>
+</div>
+</nav>
+</body></html>
