@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/core/theme/app_theme.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
-
+import 'package:neuroot/shared/widgets/bounce_button.dart';
+import 'package:neuroot/shared/widgets/ambient_motion.dart';
 // ─── NeurootCard ──────────────────────────────────────────────────────────────
 /// The primary surface container. Soft shadow, rounded corners, no borders.
 class NeurootCard extends StatelessWidget {
@@ -26,8 +27,9 @@ class NeurootCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = color ?? (isDark ? AppColors.nightCard : AppColors.warmWhite);
 
-    return GestureDetector(
+    return BounceButton(
       onTap: onTap,
+      scaleFactor: 0.98,
       child: Container(
         padding: padding ?? const EdgeInsets.all(AppTheme.spacingMD),
         decoration: BoxDecoration(
@@ -67,7 +69,7 @@ class NeurootButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final bg = backgroundColor ?? AppColors.sage;
     final fg = textColor ?? AppColors.white;
-    return GestureDetector(
+    return BounceButton(
       onTap: isLoading ? null : onTap,
       child: AnimatedContainer(
         duration: AppTheme.durationFast,
@@ -128,7 +130,7 @@ class NeurootSecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return BounceButton(
       onTap: onTap,
       child: Container(
         height: 52,
@@ -204,8 +206,9 @@ class SectionHeader extends StatelessWidget {
         Text(title, style: AppTypography.titleSmall()),
         const Spacer(),
         if (actionLabel != null)
-          GestureDetector(
+          BounceButton(
             onTap: onAction,
+            scaleFactor: 0.95,
             child: Text(
               actionLabel!,
               style: AppTypography.labelMedium(color: AppColors.sageDark),
@@ -374,8 +377,10 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 64)),
-            const SizedBox(height: AppTheme.spacingMD),
+            BreathingWidget(
+              scaleTarget: 1.05,
+              child: Text(emoji, style: const TextStyle(fontSize: 64)),
+            ),            const SizedBox(height: AppTheme.spacingMD),
             Text(title, style: AppTypography.titleMedium(), textAlign: TextAlign.center),
             const SizedBox(height: AppTheme.spacingSM),
             Text(message, style: AppTypography.bodyMedium(), textAlign: TextAlign.center),

@@ -17,11 +17,13 @@ void main() async {
   // Hive boxes are opened lazily in their respective feature providers.
 
   // Immersive edge-to-edge UI
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.dark,
-    systemNavigationBarColor: Colors.transparent,
-  ));
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.transparent,
+    ),
+  );
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
   // Portrait-only lock
