@@ -61,15 +61,24 @@ class AuthService {
   /// Returns null if the user cancelled the flow.
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null; // user cancelled
+      if (kIsWeb) {
+        return await _auth.signInWithPopup(GoogleAuthProvider());
+      } else if (defaultTargetPlatform == TargetPlatform.macOS ||
+                 defaultTargetPlatform == TargetPlatform.windows ||
+                 defaultTargetPlatform == TargetPlatform.linux) {
+        return await _auth.signInWithProvider(GoogleAuthProvider());
+      } else {
+        // Fallback to google_sign_in package for mobile (Android/iOS)
+        final googleUser = await _googleSignIn.signIn();
+        if (googleUser == null) return null; // user cancelled
 
-      final googleAuth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-      return await _auth.signInWithCredential(credential);
+        final googleAuth = await googleUser.authentication;
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        return await _auth.signInWithCredential(credential);
+      }
     } catch (e) {
       if (kDebugMode) debugPrint('[AuthService] Google sign-in error: $e');
       rethrow;
@@ -80,10 +89,16 @@ class AuthService {
 
   /// Sign out of Firebase and Google.
   Future<void> signOut() async {
-    await Future.wait([
-      _auth.signOut(),
-      _googleSignIn.signOut(),
-    ]);
+    try {
+      if (!kIsWeb && 
+          (defaultTargetPlatform == TargetPlatform.android || 
+           defaultTargetPlatform == TargetPlatform.iOS)) {
+        await _googleSignIn.signOut();
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('[AuthService] Google sign out error: $e');
+    }
+    await _auth.signOut();
   }
 
   // ─── Helpers ─────────────────────────────────────────────────────────────

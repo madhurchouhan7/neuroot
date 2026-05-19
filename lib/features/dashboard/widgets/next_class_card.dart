@@ -18,7 +18,22 @@ class NextClassCard extends ConsumerWidget {
     TimetableEntry? nextClass;
     final now = TimeOfDay.now();
     for (var c in classes) {
-      final parts = c.startTime.split(':');
+      // Clean up legacy 12-hour formats just in case
+      String t = c.startTime;
+      if (t.toUpperCase().contains('AM') || t.toUpperCase().contains('PM')) {
+        try {
+          final parts = t.split(' ');
+          final timeParts = parts[0].split(':');
+          int h = int.parse(timeParts[0]);
+          final m = int.parse(timeParts[1]);
+          final isPm = parts[1].toUpperCase() == 'PM';
+          if (isPm && h != 12) h += 12;
+          if (!isPm && h == 12) h = 0;
+          t = '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
+        } catch (_) {}
+      }
+
+      final parts = t.split(':');
       if (parts.length == 2) {
         final h = int.tryParse(parts[0]) ?? 0;
         final m = int.tryParse(parts[1]) ?? 0;
@@ -58,16 +73,22 @@ class NextClassCard extends ConsumerWidget {
       );
     }
 
+    // Use embedded code/color from timetable entry, fall back to subjects stream
     final relatedSubject = subjects.where((s) => s.id == nextClass?.subjectId).firstOrNull;
-    final code = relatedSubject?.code ?? 'CLS';
+    final code = nextClass.subjectCode.isNotEmpty
+        ? nextClass.subjectCode
+        : (relatedSubject?.code ?? 'CLS');
     final name = nextClass.subjectName;
     final attPct = relatedSubject?.attendancePercentage.toStringAsFixed(0) ?? '--';
+
     Color subjectColor = AppColors.primaryContainer;
     try {
-      if (relatedSubject != null) {
-        subjectColor = Color(int.parse('FF${relatedSubject.color.replaceAll('#', '')}', radix: 16));
-      }
+      final hex = nextClass.subjectColor.isNotEmpty
+          ? nextClass.subjectColor
+          : (relatedSubject?.color ?? '#A8D5BA');
+      subjectColor = Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
     } catch (_) {}
+
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

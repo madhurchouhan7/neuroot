@@ -16,6 +16,34 @@ extension TaskPriorityExtension on TaskPriority {
           orElse: () => TaskPriority.medium);
 }
 
+/// A subtask item with a title and completion flag.
+class SubtaskItem {
+  final String title;
+  final bool isDone;
+  const SubtaskItem({required this.title, this.isDone = false});
+
+  SubtaskItem copyWith({String? title, bool? isDone}) =>
+      SubtaskItem(title: title ?? this.title, isDone: isDone ?? this.isDone);
+
+  Map<String, dynamic> toMap() => {'title': title, 'isDone': isDone};
+  factory SubtaskItem.fromMap(Map<String, dynamic> m) =>
+      SubtaskItem(title: m['title'] as String? ?? '', isDone: m['isDone'] as bool? ?? false);
+}
+
+/// A topic/checklist item used by Exam and Lab screens.
+class TopicItem {
+  final String title;
+  final bool isDone;
+  const TopicItem({required this.title, this.isDone = false});
+
+  TopicItem copyWith({String? title, bool? isDone}) =>
+      TopicItem(title: title ?? this.title, isDone: isDone ?? this.isDone);
+
+  Map<String, dynamic> toMap() => {'title': title, 'isDone': isDone};
+  factory TopicItem.fromMap(Map<String, dynamic> m) =>
+      TopicItem(title: m['title'] as String? ?? '', isDone: m['isDone'] as bool? ?? false);
+}
+
 /// Mirrors Firestore: users/{uid}/tasks/{taskId}
 class TaskModel {
   final String id;
@@ -27,6 +55,8 @@ class TaskModel {
   final bool isCompleted;
   final DateTime? completedAt;
   final String notes;
+  final List<SubtaskItem> subtasks;
+  final List<TopicItem> topics;
 
   const TaskModel({
     required this.id,
@@ -38,10 +68,27 @@ class TaskModel {
     this.isCompleted = false,
     this.completedAt,
     this.notes = '',
+    this.subtasks = const [],
+    this.topics = const [],
   });
 
   factory TaskModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+
+    List<SubtaskItem> subtasks = [];
+    if (data['subtasks'] is List) {
+      subtasks = (data['subtasks'] as List)
+          .map((e) => SubtaskItem.fromMap(Map<String, dynamic>.from(e as Map)))
+          .toList();
+    }
+
+    List<TopicItem> topics = [];
+    if (data['topics'] is List) {
+      topics = (data['topics'] as List)
+          .map((e) => TopicItem.fromMap(Map<String, dynamic>.from(e as Map)))
+          .toList();
+    }
+
     return TaskModel(
       id: doc.id,
       title: data['title'] as String? ?? '',
@@ -53,6 +100,8 @@ class TaskModel {
       isCompleted: data['isCompleted'] as bool? ?? false,
       completedAt: (data['completedAt'] as Timestamp?)?.toDate(),
       notes: data['notes'] as String? ?? '',
+      subtasks: subtasks,
+      topics: topics,
     );
   }
 
@@ -65,6 +114,8 @@ class TaskModel {
         'isCompleted': isCompleted,
         'completedAt': completedAt != null ? Timestamp.fromDate(completedAt!) : null,
         'notes': notes,
+        'subtasks': subtasks.map((s) => s.toMap()).toList(),
+        'topics': topics.map((t) => t.toMap()).toList(),
       };
 
   TaskModel copyWith({
@@ -76,6 +127,8 @@ class TaskModel {
     bool? isCompleted,
     DateTime? completedAt,
     String? notes,
+    List<SubtaskItem>? subtasks,
+    List<TopicItem>? topics,
   }) =>
       TaskModel(
         id: id,
@@ -87,5 +140,7 @@ class TaskModel {
         isCompleted: isCompleted ?? this.isCompleted,
         completedAt: completedAt ?? this.completedAt,
         notes: notes ?? this.notes,
+        subtasks: subtasks ?? this.subtasks,
+        topics: topics ?? this.topics,
       );
 }

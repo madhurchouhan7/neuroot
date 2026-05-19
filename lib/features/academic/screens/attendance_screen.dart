@@ -24,12 +24,15 @@ class AttendanceScreen extends ConsumerWidget {
           next.successMessage != prev?.successMessage) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(next.successMessage!,
-                style: AppTypography.bodyMedium(color: AppColors.white)),
+            content: Text(
+              next.successMessage!,
+              style: AppTypography.bodyMedium(color: AppColors.white),
+            ),
             backgroundColor: AppColors.sageDark,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             margin: const EdgeInsets.all(16),
           ),
         );
@@ -39,12 +42,15 @@ class AttendanceScreen extends ConsumerWidget {
           next.errorMessage != prev?.errorMessage) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(next.errorMessage!,
-                style: AppTypography.bodyMedium(color: AppColors.white)),
+            content: Text(
+              next.errorMessage!,
+              style: AppTypography.bodyMedium(color: AppColors.white),
+            ),
             backgroundColor: AppColors.dangerSoftRed,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             margin: const EdgeInsets.all(16),
           ),
         );
@@ -53,7 +59,7 @@ class AttendanceScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5FAF7),
+      backgroundColor: AppColors.warmCream,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -61,8 +67,9 @@ class AttendanceScreen extends ConsumerWidget {
         automaticallyImplyLeading: false,
         title: Text(
           'Attendance',
-          style: AppTypography.titleMedium(color: const Color(0xFF2B2B2B))
-              .copyWith(fontSize: 20),
+          style: AppTypography.titleMedium(
+            color: const Color(0xFF2B2B2B),
+          ).copyWith(fontSize: 20),
         ),
         actions: [
           if (actionState.isLoading)
@@ -72,12 +79,16 @@ class AttendanceScreen extends ConsumerWidget {
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
-                    strokeWidth: 2, color: AppColors.sageDark),
+                  strokeWidth: 2,
+                  color: AppColors.sageDark,
+                ),
               ),
             ),
           IconButton(
-            icon: const Icon(Icons.add_circle_outline,
-                color: Color(0xFF2B2B2B)),
+            icon: const Icon(
+              Icons.add_circle_outline,
+              color: Color(0xFF2B2B2B),
+            ),
             onPressed: () => _showAddSubjectSheet(context, ref),
           ),
         ],
@@ -102,9 +113,11 @@ class AttendanceScreen extends ConsumerWidget {
                       final safeLeaves = subjects.isEmpty
                           ? 0
                           : subjects
-                              .map((s) => AttendanceRepository
-                                  .computeSafeLeaves(s))
-                              .fold(0, (a, b) => a + (b > 0 ? b : 0));
+                                .map(
+                                  (s) =>
+                                      AttendanceRepository.computeSafeLeaves(s),
+                                )
+                                .fold(0, (a, b) => a + (b > 0 ? b : 0));
                       return OverallAttendanceCard(
                         percentage: pct,
                         safeLeaves: safeLeaves,
@@ -122,8 +135,8 @@ class AttendanceScreen extends ConsumerWidget {
                       Text(
                         'SUBJECTS',
                         style: AppTypography.labelSmall(
-                                color: const Color(0xFF4E4634))
-                            .copyWith(letterSpacing: 1, fontSize: 11),
+                          color: const Color(0xFF4E4634),
+                        ).copyWith(letterSpacing: 1, fontSize: 11),
                       ),
                       GestureDetector(
                         onTap: () {}, // TODO: sort toggle
@@ -132,12 +145,15 @@ class AttendanceScreen extends ConsumerWidget {
                             Text(
                               'Sort by risk',
                               style: AppTypography.labelSmall(
-                                  color: AppColors.primaryContainer),
+                                color: AppColors.primaryContainer,
+                              ),
                             ),
                             const SizedBox(width: 4),
-                            const Icon(Icons.arrow_downward,
-                                size: 14,
-                                color: AppColors.primaryContainer),
+                            const Icon(
+                              Icons.arrow_downward,
+                              size: 14,
+                              color: AppColors.primaryContainer,
+                            ),
                           ],
                         ),
                       ),
@@ -157,9 +173,11 @@ class AttendanceScreen extends ConsumerWidget {
                       }
 
                       // Sort: danger first, then warning, then safe
-                      final sorted = [...subjects]..sort((a, b) {
-                          return a.attendancePercentage
-                              .compareTo(b.attendancePercentage);
+                      final sorted = [...subjects]
+                        ..sort((a, b) {
+                          return a.attendancePercentage.compareTo(
+                            b.attendancePercentage,
+                          );
                         });
 
                       return Column(
@@ -170,8 +188,8 @@ class AttendanceScreen extends ConsumerWidget {
                           final risk = pct >= 80
                               ? AttendanceRisk.safe
                               : pct >= 75
-                                  ? AttendanceRisk.warning
-                                  : AttendanceRisk.danger;
+                              ? AttendanceRisk.warning
+                              : AttendanceRisk.danger;
                           final dotColor = _colorFromHex(subject.color);
 
                           return AttendanceSubjectCard(
@@ -179,17 +197,15 @@ class AttendanceScreen extends ConsumerWidget {
                             professor: subject.code,
                             percentage: pct,
                             dotColor: dotColor,
-                            iconBgColor:
-                                dotColor.withValues(alpha: 0.15),
+                            iconBgColor: dotColor.withValues(alpha: 0.15),
                             riskLevel: risk,
                             leavesLeft: safeLeaves.abs(),
                             onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => SubjectDetailScreen(
-                                    subject: subject,
-                                  ),
+                                  builder: (_) =>
+                                      SubjectDetailScreen(subject: subject),
                                 ),
                               );
                             },
@@ -246,8 +262,14 @@ class _AddSubjectSheetState extends State<_AddSubjectSheet> {
   String _selectedColor = '#A8D5BA';
 
   final _colors = [
-    '#A8D5BA', '#FF8A65', '#645495', '#D49800',
-    '#E05C5C', '#7CB9E8', '#95D5B2', '#CDB4DB',
+    '#A8D5BA',
+    '#FF8A65',
+    '#645495',
+    '#D49800',
+    '#E05C5C',
+    '#7CB9E8',
+    '#95D5B2',
+    '#CDB4DB',
   ];
 
   @override
@@ -285,25 +307,29 @@ class _AddSubjectSheetState extends State<_AddSubjectSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          Text('Add Subject 📚',
-              style: AppTypography.titleMedium(
-                  color: AppColors.textPrimary)),
+          Text(
+            'Add Subject 📚',
+            style: AppTypography.titleMedium(color: AppColors.textPrimary),
+          ),
           const SizedBox(height: 20),
           _buildField('Subject Name', 'e.g. Data Structures', _nameCtrl),
           const SizedBox(height: 12),
           _buildField('Subject Code', 'e.g. CS301', _codeCtrl),
           const SizedBox(height: 16),
-          Text('COLOR',
-              style: AppTypography.labelSmall(
-                      color: const Color(0xFF8B8070))
-                  .copyWith(letterSpacing: 0.8, fontSize: 11)),
+          Text(
+            'COLOR',
+            style: AppTypography.labelSmall(
+              color: const Color(0xFF8B8070),
+            ).copyWith(letterSpacing: 0.8, fontSize: 11),
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 10,
             children: _colors.map((c) {
               final isSelected = c == _selectedColor;
               final color = Color(
-                  int.parse('FF${c.replaceAll('#', '')}', radix: 16));
+                int.parse('FF${c.replaceAll('#', '')}', radix: 16),
+              );
               return GestureDetector(
                 onTap: () => setState(() => _selectedColor = c),
                 child: Container(
@@ -313,13 +339,11 @@ class _AddSubjectSheetState extends State<_AddSubjectSheet> {
                     color: color,
                     shape: BoxShape.circle,
                     border: isSelected
-                        ? Border.all(
-                            color: AppColors.textPrimary, width: 2)
+                        ? Border.all(color: AppColors.textPrimary, width: 2)
                         : null,
                   ),
                   child: isSelected
-                      ? const Icon(Icons.check,
-                          color: Colors.white, size: 16)
+                      ? const Icon(Icons.check, color: Colors.white, size: 16)
                       : null,
                 ),
               );
@@ -334,7 +358,8 @@ class _AddSubjectSheetState extends State<_AddSubjectSheet> {
                 backgroundColor: AppColors.primaryContainer,
                 foregroundColor: AppColors.textPrimary,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
               onPressed: () async {
                 if (_nameCtrl.text.trim().isEmpty) return;
@@ -347,9 +372,10 @@ class _AddSubjectSheetState extends State<_AddSubjectSheet> {
                       color: _selectedColor,
                     );
               },
-              child: Text('Add Subject',
-                  style: AppTypography.buttonMedium(
-                      color: AppColors.textPrimary)),
+              child: Text(
+                'Add Subject',
+                style: AppTypography.buttonMedium(color: AppColors.textPrimary),
+              ),
             ),
           ),
         ],
@@ -357,38 +383,37 @@ class _AddSubjectSheetState extends State<_AddSubjectSheet> {
     );
   }
 
-  Widget _buildField(
-      String label, String hint, TextEditingController ctrl) {
+  Widget _buildField(String label, String hint, TextEditingController ctrl) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label.toUpperCase(),
-            style: AppTypography.labelSmall(
-                    color: const Color(0xFF8B8070))
-                .copyWith(letterSpacing: 0.8, fontSize: 11)),
+        Text(
+          label.toUpperCase(),
+          style: AppTypography.labelSmall(
+            color: const Color(0xFF8B8070),
+          ).copyWith(letterSpacing: 0.8, fontSize: 11),
+        ),
         const SizedBox(height: 6),
         TextField(
           controller: ctrl,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: AppTypography.bodyMedium(
-                color: const Color(0xFFB0A898)),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            hintStyle: AppTypography.bodyMedium(color: const Color(0xFFB0A898)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: Color(0xFFE8E0D4)),
+              borderSide: const BorderSide(color: Color(0xFFE8E0D4)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: Color(0xFFE8E0D4)),
+              borderSide: const BorderSide(color: Color(0xFFE8E0D4)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: AppColors.primaryContainer),
+              borderSide: const BorderSide(color: AppColors.primaryContainer),
             ),
           ),
           style: AppTypography.bodyMedium(color: AppColors.textPrimary),
@@ -455,8 +480,7 @@ class _ErrorCard extends StatelessWidget {
           Expanded(
             child: Text(
               "Couldn't load data. Check your connection 🌱",
-              style: AppTypography.bodyMedium(
-                  color: const Color(0xFFE05C5C)),
+              style: AppTypography.bodyMedium(color: const Color(0xFFE05C5C)),
             ),
           ),
         ],
@@ -477,21 +501,25 @@ class _EmptySubjectsCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(20),
-          border:
-              Border.all(color: const Color(0xFFE8E0D4), width: 1.5),
+          border: Border.all(color: const Color(0xFFE8E0D4), width: 1.5),
         ),
         child: Column(
           children: [
-            const Icon(Icons.school_outlined,
-                color: AppColors.primaryContainer, size: 40),
+            const Icon(
+              Icons.school_outlined,
+              color: AppColors.primaryContainer,
+              size: 40,
+            ),
             const SizedBox(height: 12),
-            Text('No subjects yet 🌱',
-                style: AppTypography.titleSmall(
-                    color: AppColors.textPrimary)),
+            Text(
+              'No subjects yet 🌱',
+              style: AppTypography.titleSmall(color: AppColors.textPrimary),
+            ),
             const SizedBox(height: 4),
-            Text('Tap here to add your first subject',
-                style: AppTypography.bodyMedium(
-                    color: AppColors.textSecondary)),
+            Text(
+              'Tap here to add your first subject',
+              style: AppTypography.bodyMedium(color: AppColors.textSecondary),
+            ),
           ],
         ),
       ),

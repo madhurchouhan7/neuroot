@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'app_shell.dart';
-import '../../features/onboarding/screens/onboarding_screen.dart';
+import '../../features/onboarding/screens/intro_screen.dart';
+import '../../features/onboarding/screens/setup_screen.dart';
 import '../../features/emotional/screens/emotional_checkin_screen.dart';
 import '../../features/auth/screens/splash_screen.dart';
 import '../../features/auth/screens/landing_screen.dart';
@@ -40,19 +41,24 @@ GoRouter buildAppRouter(WidgetRef ref) {
         return location == '/splash' ? null : '/splash';
       }
 
-      final isOnAuthRoute = location == '/landing' ||
+      // Routes that are valid while unauthenticated
+      final isOnUnauthRoute = location == '/intro' ||
+          location == '/landing' ||
           location == '/signin' ||
           location == '/signup' ||
           location == '/splash';
 
-      // Not signed in → go to landing
+      // ── Not signed in ────────────────────────────────────────────────────────
+      // Always start with the intro onboarding flow
       if (user == null) {
-        if (location == '/splash') return '/landing';
-        return isOnAuthRoute ? null : '/landing';
+        if (location == '/splash') return '/intro';
+        return isOnUnauthRoute ? null : '/intro';
       }
 
-      // Signed in → check onboarding flag
-      if (isOnAuthRoute) {
+      // ── Signed in ────────────────────────────────────────────────────────────
+      // If the user is on an unauth route (e.g. just logged in from /landing),
+      // check their Firestore onboarding status.
+      if (isOnUnauthRoute) {
         try {
           final doc = await FirebaseFirestore.instance
               .collection('users')
@@ -60,7 +66,7 @@ GoRouter buildAppRouter(WidgetRef ref) {
               .get();
           final onboardingComplete =
               (doc.data()?['onboardingComplete'] as bool?) ?? false;
-          return onboardingComplete ? '/home' : '/onboarding';
+          return onboardingComplete ? '/home' : '/setup';
         } catch (_) {
           // Firestore unavailable — go home
           return '/home';
@@ -78,6 +84,16 @@ GoRouter buildAppRouter(WidgetRef ref) {
           transitionsBuilder: _fadeSlideTransition,
         ),
       ),
+
+      // ── Pre-auth Intro Onboarding ──────────────────────────────────────────
+      GoRoute(
+        path: '/intro',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          child: const IntroScreen(),
+          transitionsBuilder: _fadeSlideTransition,
+        ),
+      ),
+
       GoRoute(
         path: '/landing',
         pageBuilder: (context, state) => CustomTransitionPage(
@@ -100,11 +116,11 @@ GoRouter buildAppRouter(WidgetRef ref) {
         ),
       ),
 
-      // ── Onboarding ─────────────────────────────────────────────────────────
+      // ── Post-auth Setup (Semester + Timetable) ─────────────────────────────
       GoRoute(
-        path: '/onboarding',
+        path: '/setup',
         pageBuilder: (context, state) => CustomTransitionPage(
-          child: const OnboardingScreen(),
+          child: const SetupScreen(),
           transitionsBuilder: _fadeSlideTransition,
         ),
       ),

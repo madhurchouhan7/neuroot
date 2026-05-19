@@ -4,12 +4,14 @@ import 'package:neuroot/core/models/task_model.dart';
 import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/features/planning/providers/task_provider.dart';
+import 'package:neuroot/features/planning/screens/task_detail_screen.dart';
 import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
 
 import '../widgets/planner_header.dart';
 import '../widgets/exam_countdown_card.dart';
 import '../widgets/quick_add_task_sheet.dart';
 import '../widgets/un_overwhelm_me_view.dart';
+import 'calendar_screen.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
@@ -30,34 +32,44 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     ref.listen<TaskActionState>(taskNotifierProvider, (prev, next) {
       if (next.successMessage != null &&
           next.successMessage != prev?.successMessage) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(next.successMessage!,
-              style: AppTypography.bodyMedium(color: AppColors.white)),
-          backgroundColor: AppColors.sageDark,
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(16),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              next.successMessage!,
+              style: AppTypography.bodyMedium(color: AppColors.white),
+            ),
+            backgroundColor: AppColors.sageDark,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
         ref.read(taskNotifierProvider.notifier).clearMessages();
       }
       if (next.errorMessage != null &&
           next.errorMessage != prev?.errorMessage) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(next.errorMessage!,
-              style: AppTypography.bodyMedium(color: AppColors.white)),
-          backgroundColor: const Color(0xFFE05C5C),
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(16),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              next.errorMessage!,
+              style: AppTypography.bodyMedium(color: AppColors.white),
+            ),
+            backgroundColor: const Color(0xFFE05C5C),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
         ref.read(taskNotifierProvider.notifier).clearMessages();
       }
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F5FF),
+      backgroundColor: AppColors.warmCream,
       body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -66,11 +78,16 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
             SliverToBoxAdapter(
               child: Column(
                 children: [
-                  GestureDetector(
-                    onTap: () => _openAddTask(context),
-                    child: const PlannerHeader(),
+                  PlannerHeader(
+                    onCalendarTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CalendarScreen(),
+                        ),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 16),
 
                   // Tab switcher
                   Padding(
@@ -81,10 +98,12 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                         color: AppColors.softGrey,
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      child: Row(children: [
-                        _buildTab(0, '📋 Tasks'),
-                        _buildTab(1, '✨ AI Plan'),
-                      ]),
+                      child: Row(
+                        children: [
+                          _buildTab(0, '📋 Tasks'),
+                          _buildTab(1, '✨ AI Plan'),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -104,7 +123,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                             child: Container(
                               margin: const EdgeInsets.only(right: 8),
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 6),
+                                horizontal: 14,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? AppColors.primaryContainer
@@ -113,14 +134,16 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                                 border: isSelected
                                     ? null
                                     : Border.all(
-                                        color: const Color(0xFFE8E0D4)),
+                                        color: const Color(0xFFE8E0D4),
+                                      ),
                               ),
                               child: Text(
                                 _filterLabel(f),
                                 style: AppTypography.labelSmall(
-                                    color: isSelected
-                                        ? AppColors.textPrimary
-                                        : const Color(0xFF8B8070)),
+                                  color: isSelected
+                                      ? AppColors.textPrimary
+                                      : const Color(0xFF8B8070),
+                                ),
                               ),
                             ),
                           );
@@ -142,14 +165,18 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   child: Padding(
                     padding: EdgeInsets.all(40),
                     child: Center(
-                        child: CircularProgressIndicator(
-                            color: AppColors.primaryContainer)),
+                      child: CircularProgressIndicator(
+                        color: AppColors.primaryContainer,
+                      ),
+                    ),
                   ),
                 ),
                 error: (e, _) => SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -157,23 +184,27 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
-                          "Couldn't load tasks. Check connection 🌱",
-                          style: AppTypography.bodyMedium(
-                              color: const Color(0xFFE05C5C))),
+                        "Couldn't load tasks. Check connection 🌱",
+                        style: AppTypography.bodyMedium(
+                          color: const Color(0xFFE05C5C),
+                        ),
+                      ),
                     ),
                   ),
                 ),
                 data: (allTasks) {
                   final tasks = _applyFilter(allTasks, filter);
-                  final incomplete =
-                      tasks.where((t) => !t.isCompleted).toList();
-                  final completed =
-                      tasks.where((t) => t.isCompleted).toList();
+                  final incomplete = tasks
+                      .where((t) => !t.isCompleted)
+                      .toList();
+                  final completed = tasks.where((t) => t.isCompleted).toList();
 
                   if (tasks.isEmpty) {
                     return SliverToBoxAdapter(
-                        child: _EmptyTasksView(
-                            onAdd: () => _openAddTask(context)));
+                      child: _EmptyTasksView(
+                        onAdd: () => _openAddTask(context),
+                      ),
+                    );
                   }
 
                   final grouped = _groupByDate(incomplete);
@@ -181,45 +212,58 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   return SliverList(
                     delegate: SliverChildListDelegate([
                       // Grouped incomplete tasks
-                      ...grouped.entries.expand((entry) => [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 4),
-                              child: Text(entry.key,
-                                  style: AppTypography.labelSmall(
-                                      color:
-                                          _dateHeaderColor(entry.key))),
+                      ...grouped.entries.expand(
+                        (entry) => [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 4,
                             ),
-                            ...entry.value.map((task) => _LiveTaskCard(
-                                  task: task,
-                                  onComplete: (done) => ref
-                                      .read(taskNotifierProvider.notifier)
-                                      .toggleComplete(task.id,
-                                          isCompleted: done),
-                                  onDelete: () =>
-                                      _confirmDelete(context, ref, task.id),
-                                )),
-                          ]),
+                            child: Text(
+                              entry.key,
+                              style: AppTypography.labelSmall(
+                                color: _dateHeaderColor(entry.key),
+                              ),
+                            ),
+                          ),
+                          ...entry.value.map(
+                            (task) => _LiveTaskCard(
+                              task: task,
+                              onComplete: (done) => ref
+                                  .read(taskNotifierProvider.notifier)
+                                  .toggleComplete(task.id, isCompleted: done),
+                              onDelete: () =>
+                                  _confirmDelete(context, ref, task.id),
+                            ),
+                          ),
+                        ],
+                      ),
 
                       // Completed section
                       if (completed.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         Padding(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 4),
-                          child: Text('DONE ✅',
-                              style: AppTypography.labelSmall(
-                                  color: AppColors.sageDark)),
+                            horizontal: 20,
+                            vertical: 4,
+                          ),
+                          child: Text(
+                            'DONE ✅',
+                            style: AppTypography.labelSmall(
+                              color: AppColors.sageDark,
+                            ),
+                          ),
                         ),
-                        ...completed.map((task) => _LiveTaskCard(
-                              task: task,
-                              onComplete: (done) => ref
-                                  .read(taskNotifierProvider.notifier)
-                                  .toggleComplete(task.id,
-                                      isCompleted: done),
-                              onDelete: () =>
-                                  _confirmDelete(context, ref, task.id),
-                            )),
+                        ...completed.map(
+                          (task) => _LiveTaskCard(
+                            task: task,
+                            onComplete: (done) => ref
+                                .read(taskNotifierProvider.notifier)
+                                .toggleComplete(task.id, isCompleted: done),
+                            onDelete: () =>
+                                _confirmDelete(context, ref, task.id),
+                          ),
+                        ),
                       ],
                     ]),
                   );
@@ -238,8 +282,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
               onPressed: () => _openAddTask(context),
               backgroundColor: AppColors.primaryContainer,
               elevation: 4,
-              child: const Icon(Icons.add,
-                  color: Color(0xFF6D5400), size: 28),
+              child: const Icon(Icons.add, color: Color(0xFF6D5400), size: 28),
             )
           : null,
     );
@@ -260,11 +303,14 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                 : null,
           ),
           alignment: Alignment.center,
-          child: Text(label,
-              style: AppTypography.labelMedium(
-                  color: isActive
-                      ? const Color(0xFF1B1C1C)
-                      : const Color(0xFF8B8070))),
+          child: Text(
+            label,
+            style: AppTypography.labelMedium(
+              color: isActive
+                  ? const Color(0xFF1B1C1C)
+                  : const Color(0xFF8B8070),
+            ),
+          ),
         ),
       ),
     );
@@ -280,28 +326,35 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   }
 
   Future<void> _confirmDelete(
-      BuildContext context, WidgetRef ref, String taskId) async {
+    BuildContext context,
+    WidgetRef ref,
+    String taskId,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Delete task?',
-            style:
-                AppTypography.titleSmall(color: AppColors.textPrimary)),
-        content: Text("This can't be undone.",
-            style: AppTypography.bodyMedium(
-                color: AppColors.textSecondary)),
+        title: Text(
+          'Delete task?',
+          style: AppTypography.titleSmall(color: AppColors.textPrimary),
+        ),
+        content: Text(
+          "This can't be undone.",
+          style: AppTypography.bodyMedium(color: AppColors.textSecondary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancel',
-                style: AppTypography.labelMedium(
-                    color: AppColors.textSecondary)),
+            child: Text(
+              'Cancel',
+              style: AppTypography.labelMedium(color: AppColors.textSecondary),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Delete',
-                style: AppTypography.labelMedium(
-                    color: const Color(0xFFE05C5C))),
+            child: Text(
+              'Delete',
+              style: AppTypography.labelMedium(color: const Color(0xFFE05C5C)),
+            ),
           ),
         ],
       ),
@@ -316,9 +369,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       case TaskFilter.all:
         return tasks;
       case TaskFilter.assignments:
-        return tasks
-            .where((t) => t.type == TaskType.assignment)
-            .toList();
+        return tasks.where((t) => t.type == TaskType.assignment).toList();
       case TaskFilter.exams:
         return tasks.where((t) => t.type == TaskType.exam).toList();
       case TaskFilter.labs:
@@ -334,7 +385,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
     for (final task in tasks) {
       final d = DateTime(
-          task.dueDate.year, task.dueDate.month, task.dueDate.day);
+        task.dueDate.year,
+        task.dueDate.month,
+        task.dueDate.day,
+      );
       String label;
       if (d == today) {
         label = 'TODAY · ${_urgencyLabel(task.priority)}';
@@ -383,8 +437,18 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
   String _formatDate(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return '${days[date.weekday - 1]}, ${date.day} ${months[date.month - 1]}';
@@ -426,135 +490,147 @@ class _LiveTaskCardState extends State<_LiveTaskCard> {
           color: const Color(0xFFFFECEC),
           borderRadius: BorderRadius.circular(20),
         ),
-        child: const Icon(Icons.delete_outline,
-            color: Color(0xFFE05C5C), size: 24),
+        child: const Icon(
+          Icons.delete_outline,
+          color: Color(0xFFE05C5C),
+          size: 24,
+        ),
       ),
       confirmDismiss: (_) async {
         widget.onDelete();
         return false;
       },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isCompleted
-              ? const Color(0xFFF8F8F8)
-              : AppColors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => TaskDetailScreen(task: task)),
+          );
+        },
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isCompleted ? const Color(0xFFF8F8F8) : AppColors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
               color: isCompleted
                   ? const Color(0xFFEEEEEE)
-                  : const Color(0xFFEDE6F5)),
-          boxShadow: isCompleted
-              ? null
-              : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Complete toggle
-            GestureDetector(
-              onTap: () => widget.onComplete(!isCompleted),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 22,
-                height: 22,
-                margin: const EdgeInsets.only(top: 1),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isCompleted
-                      ? AppColors.sageDark
-                      : Colors.transparent,
-                  border: Border.all(
+                  : const Color(0xFFEDE6F5),
+            ),
+            boxShadow: isCompleted
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Complete toggle
+              GestureDetector(
+                onTap: () => widget.onComplete(!isCompleted),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 22,
+                  height: 22,
+                  margin: const EdgeInsets.only(top: 1),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
                     color: isCompleted
                         ? AppColors.sageDark
-                        : const Color(0xFFEDE6F5),
-                    width: 2,
+                        : Colors.transparent,
+                    border: Border.all(
+                      color: isCompleted
+                          ? AppColors.sageDark
+                          : const Color(0xFFEDE6F5),
+                      width: 2,
+                    ),
                   ),
+                  child: isCompleted
+                      ? const Icon(Icons.check, color: Colors.white, size: 14)
+                      : null,
                 ),
-                child: isCompleted
-                    ? const Icon(Icons.check,
-                        color: Colors.white, size: 14)
-                    : null,
               ),
-            ),
-            const SizedBox(width: 12),
+              const SizedBox(width: 12),
 
-            // Content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          task.title,
-                          style: AppTypography.bodyMedium(
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            task.title,
+                            style:
+                                AppTypography.bodyMedium(
                                   color: isCompleted
                                       ? const Color(0xFFB0A898)
-                                      : const Color(0xFF1B1C1C))
-                              .copyWith(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 15,
-                            decoration: isCompleted
-                                ? TextDecoration.lineThrough
-                                : null,
+                                      : const Color(0xFF1B1C1C),
+                                ).copyWith(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15,
+                                  decoration: isCompleted
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      if (task.subjectId.isNotEmpty) ...[
-                        const SizedBox(width: 8),
+                        if (task.subjectId.isNotEmpty) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5EFE3),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Text(
+                              task.subjectId,
+                              style: AppTypography.labelSmall(
+                                color: const Color(0xFF7F7662),
+                              ).copyWith(fontSize: 10),
+                              maxLines: 1,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
+                          width: 6,
+                          height: 6,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF5EFE3),
-                            borderRadius: BorderRadius.circular(16),
+                            color: priorityColor,
+                            shape: BoxShape.circle,
                           ),
-                          child: Text(
-                            task.subjectId,
-                            style: AppTypography.labelSmall(
-                                    color: const Color(0xFF7F7662))
-                                .copyWith(fontSize: 10),
-                            maxLines: 1,
-                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _subtitleText(task),
+                          style: AppTypography.bodySmall(
+                            color: const Color(0xFFB0A898),
+                          ).copyWith(fontSize: 11),
                         ),
                       ],
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: priorityColor,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        _subtitleText(task),
-                        style: AppTypography.bodySmall(
-                                color: const Color(0xFFB0A898))
-                            .copyWith(fontSize: 11),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -562,8 +638,18 @@ class _LiveTaskCardState extends State<_LiveTaskCard> {
 
   String _subtitleText(TaskModel task) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final dateStr = '${task.dueDate.day} ${months[task.dueDate.month - 1]}';
     final priority =
@@ -608,28 +694,32 @@ class _EmptyTasksView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Text('No tasks yet 🎉',
-              style: AppTypography.titleSmall(
-                      color: const Color(0xFF1B1C1C))
-                  .copyWith(fontSize: 16)),
+          Text(
+            'No tasks yet 🎉',
+            style: AppTypography.titleSmall(
+              color: const Color(0xFF1B1C1C),
+            ).copyWith(fontSize: 16),
+          ),
           const SizedBox(height: 4),
-          Text("Sprout says you're ahead of schedule!",
-              style: AppTypography.bodySmall(
-                      color: const Color(0xFF8B8070))
-                  .copyWith(fontWeight: FontWeight.normal)),
+          Text(
+            "Sprout says you're ahead of schedule!",
+            style: AppTypography.bodySmall(
+              color: const Color(0xFF8B8070),
+            ).copyWith(fontWeight: FontWeight.normal),
+          ),
           const SizedBox(height: 24),
           GestureDetector(
             onTap: onAdd,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
                 color: AppColors.primaryContainer,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Text('Add your first task',
-                  style: AppTypography.buttonMedium(
-                      color: AppColors.textPrimary)),
+              child: Text(
+                'Add your first task',
+                style: AppTypography.buttonMedium(color: AppColors.textPrimary),
+              ),
             ),
           ),
         ],

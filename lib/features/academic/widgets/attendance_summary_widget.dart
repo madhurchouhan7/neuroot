@@ -11,9 +11,9 @@ class AttendanceSummaryWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final attendanceData = ref.watch(weeklyAttendanceProvider);
     
-    // Average attendance
+    // Average attendance (0.0 to 100.0)
     final totalPercent = attendanceData.isEmpty 
-        ? 0.0 
+        ? 100.0 
         : attendanceData.map((e) => e['percentage'] as double).reduce((a, b) => a + b) / attendanceData.length;
 
     return Container(
@@ -44,7 +44,7 @@ class AttendanceSummaryWidget extends ConsumerWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Background
+                // Background track
                 CircularProgressIndicator(
                   value: 1.0,
                   strokeWidth: 8,
@@ -52,27 +52,27 @@ class AttendanceSummaryWidget extends ConsumerWidget {
                 ),
                 if (attendanceData.isEmpty)
                   CircularProgressIndicator(
-                    value: 0.0,
+                    value: 1.0,
                     strokeWidth: 8,
                     color: AppColors.primaryContainer,
                   )
                 else
-                  // Simple representation: stack of the first few subjects
+                  // Simple representation: stack of the first few subjects (converted to 0.0 - 1.0)
                   ...attendanceData.take(4).toList().asMap().entries.map((entry) {
                     final i = entry.key;
                     final data = entry.value;
-                    final val = data['percentage'] as double;
+                    final val = (data['percentage'] as double) / 100.0;
                     final colorHex = data['colorHex'] as String;
                     final color = Color(int.parse(colorHex.replaceAll('#', '0xFF')));
                     return CircularProgressIndicator(
-                      value: val * (1.0 - (i * 0.15)), // Stagger them
+                      value: val.clamp(0.0, 1.0) * (1.0 - (i * 0.15)), // Stagger them
                       strokeWidth: 8,
                       color: color,
                     );
                   }),
                 
                 Text(
-                  '${(totalPercent * 100).toInt()}%',
+                  '${totalPercent.toInt()}%',
                   style: AppTypography.titleXL(color: const Color(0xFF5A5A5A)).copyWith(fontSize: 16),
                 ),
               ],

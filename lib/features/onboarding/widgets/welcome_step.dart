@@ -4,6 +4,7 @@ import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/shared/widgets/neuroot_widgets.dart';
 import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
 
+
 class WelcomeStep extends StatelessWidget {
   final VoidCallback onNext;
 
@@ -67,7 +68,21 @@ class WelcomeStep extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Welcome to Bloom 🌱', style: AppTypography.titleXL(color: AppColors.textPrimary)),
+                // Step badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.amber.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'STEP 1 OF 4',
+                    style: AppTypography.labelSmall(color: AppColors.amber)
+                        .copyWith(fontWeight: FontWeight.w700, letterSpacing: 1),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text('Welcome to Neuroot 🌱', style: AppTypography.titleXL(color: AppColors.textPrimary)),
                 const SizedBox(height: 16),
                 Text(
                   "Your cozy study companion. We'll help you stay on top of classes, assignments, and your own well-being — without the stress.",
@@ -93,14 +108,6 @@ class WelcomeStep extends StatelessWidget {
                   textColor: AppColors.textPrimary,
                   icon: const Icon(Icons.arrow_forward, size: 20, color: AppColors.textPrimary),
                   onTap: onNext,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('Swipe to continue ', style: AppTypography.labelSmall(color: const Color(0xFFD1C5AE))),
-                    const Icon(Icons.arrow_forward, size: 14, color: Color(0xFFD1C5AE)),
-                  ],
                 ),
                 const SizedBox(height: 32),
               ],

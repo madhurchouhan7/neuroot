@@ -137,10 +137,10 @@ class AuthNotifier extends Notifier<AuthState> {
         isLoading: false,
         errorMessage: AuthService.friendlyError(e),
       );
-    } catch (_) {
+    } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: "Google sign-in didn't work. Try again 🌱",
+        errorMessage: "Google sign-in error: ${e.toString().split('\n').first}",
       );
     }
   }

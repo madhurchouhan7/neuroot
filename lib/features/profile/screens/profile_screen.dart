@@ -4,6 +4,7 @@ import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:neuroot/features/auth/providers/auth_provider.dart';
 import 'package:neuroot/features/auth/providers/user_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -13,10 +14,54 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userState = ref.watch(userDocProvider);
     final user = userState.asData?.value;
-    
+
+    Future<void> handleSignOut() async {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          backgroundColor: AppColors.white,
+          title: Text(
+            'Sign Out',
+            style: AppTypography.titleMedium(color: const Color(0xFF2B2B2B)),
+          ),
+          content: Text(
+            'Are you sure you want to sign out?',
+            style: AppTypography.bodyMedium(color: const Color(0xFF5A5A5A)),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                'Cancel',
+                style: AppTypography.bodyMedium(
+                  color: AppColors.primaryContainer,
+                ).copyWith(fontWeight: FontWeight.bold),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                'Sign Out',
+                style: AppTypography.bodyMedium(
+                  color: Colors.red,
+                ).copyWith(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm == true) {
+        ref.read(authNotifierProvider.notifier).signOut();
+      }
+    }
+
     final level = user?.level ?? 1;
     final xp = user?.xp ?? 0;
-    
+
     // Calculate level progress (Level 1 requires 500 XP, level 2 requires 1000 XP, etc. according to our provider logic)
     // Actually the user provider awards level based on: (xp ~/ 500) + 1. So each level is 500 XP.
     final currentLevelXP = xp % 500;
@@ -28,15 +73,18 @@ class ProfileScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        leading: const SizedBox.shrink(), // AppShell handles back if needed, but this is a root tab
+        leading:
+            const SizedBox.shrink(), // AppShell handles back if needed, but this is a root tab
         title: Text(
           'Sprout 🌱',
-          style: AppTypography.titleMedium(color: const Color(0xFF2B2B2B)).copyWith(fontSize: 24),
+          style: AppTypography.titleMedium(
+            color: const Color(0xFF2B2B2B),
+          ).copyWith(fontSize: 24),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.ios_share, color: AppColors.primaryContainer),
-            onPressed: () {},
+            icon: const Icon(Icons.logout, color: AppColors.primaryContainer),
+            onPressed: handleSignOut,
           ),
         ],
       ),
@@ -50,13 +98,23 @@ class ProfileScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 16),
-                  
+
                   // XP Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Level $level', style: AppTypography.titleMedium(color: const Color(0xFF2B2B2B)).copyWith(fontSize: 14)),
-                      Text('$currentLevelXP / 500 XP', style: AppTypography.bodySmall(color: const Color(0xFF5A5A5A)).copyWith(fontSize: 12, fontWeight: FontWeight.w500)),
+                      Text(
+                        'Level $level',
+                        style: AppTypography.titleMedium(
+                          color: const Color(0xFF2B2B2B),
+                        ).copyWith(fontSize: 14),
+                      ),
+                      Text(
+                        '$currentLevelXP / 500 XP',
+                        style: AppTypography.bodySmall(
+                          color: const Color(0xFF5A5A5A),
+                        ).copyWith(fontSize: 12, fontWeight: FontWeight.w500),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -73,23 +131,27 @@ class ProfileScreen extends ConsumerWidget {
                       child: Container(
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFFFFF3C4), AppColors.primaryContainer],
+                            colors: [
+                              Color(0xFFFFF3C4),
+                              AppColors.primaryContainer,
+                            ],
                           ),
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // Mascot Hero
                   Stack(
                     alignment: Alignment.bottomCenter,
                     clipBehavior: Clip.none,
                     children: [
                       NeurootNetworkImage(
-                        url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC0mprWCJNQy5UKdH9apf4yYSUDZlT_FwMfPtcISBk4yz3BRDYfqx18lIpWfrEslLXaLk-nfgzIIJl2tRRs1kSWh2_JaGxJCiM3DaRN7Kut9Izu-ATrgGH5lhSm8AuNppkGNTdcbnxBy5U9eyKlR4u1DSe6Rrng4iGusQXyC5RgH6gVagjrmlumwdRccez7tbXddMztMlpuQc79Lv2uwPidIqIFbmM74MFRK_f7EXIji2QJejM-wOxXkmJJ1ufpT9aN1MzoQ1ho_DM',
+                        url:
+                            'https://lh3.googleusercontent.com/aida-public/AB6AXuC0mprWCJNQy5UKdH9apf4yYSUDZlT_FwMfPtcISBk4yz3BRDYfqx18lIpWfrEslLXaLk-nfgzIIJl2tRRs1kSWh2_JaGxJCiM3DaRN7Kut9Izu-ATrgGH5lhSm8AuNppkGNTdcbnxBy5U9eyKlR4u1DSe6Rrng4iGusQXyC5RgH6gVagjrmlumwdRccez7tbXddMztMlpuQc79Lv2uwPidIqIFbmM74MFRK_f7EXIji2QJejM-wOxXkmJJ1ufpT9aN1MzoQ1ho_DM',
                         height: 200,
                         fit: BoxFit.contain,
                         errorIcon: Icons.eco,
@@ -98,7 +160,10 @@ class ProfileScreen extends ConsumerWidget {
                       Positioned(
                         bottom: -16,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.white,
                             borderRadius: BorderRadius.circular(20),
@@ -113,15 +178,17 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                           child: Text(
                             'Happy & Growing ✨',
-                            style: AppTypography.labelSmall(color: const Color(0xFF1B1C1C)),
+                            style: AppTypography.labelSmall(
+                              color: const Color(0xFF1B1C1C),
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 40),
-                  
+
                   // Speech bubble
                   Stack(
                     clipBehavior: Clip.none,
@@ -151,20 +218,24 @@ class ProfileScreen extends ConsumerWidget {
                         child: Text(
                           '"You completed 3 tasks and attended all classes today! 🌟 Small progress still counts — I\'m proud of you."',
                           textAlign: TextAlign.center,
-                          style: AppTypography.bodyMedium(color: const Color(0xFF1B1C1C)).copyWith(fontWeight: FontWeight.w600),
+                          style: AppTypography.bodyMedium(
+                            color: const Color(0xFF1B1C1C),
+                          ).copyWith(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // Cosmetic Unlocks
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Cosmetic Unlocks',
-                      style: AppTypography.titleMedium(color: const Color(0xFF2B2B2B)).copyWith(fontSize: 16),
+                      style: AppTypography.titleMedium(
+                        color: const Color(0xFF2B2B2B),
+                      ).copyWith(fontSize: 16),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -182,23 +253,27 @@ class ProfileScreen extends ConsumerWidget {
                       _buildCosmetic('👑', 'Gold Crown', true),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // Milestones
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Milestones',
-                      style: AppTypography.titleMedium(color: const Color(0xFF2B2B2B)).copyWith(fontSize: 16),
+                      style: AppTypography.titleMedium(
+                        color: const Color(0xFF2B2B2B),
+                      ).copyWith(fontSize: 16),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   _buildMilestone(
                     icon: '📅',
                     title: '7-Day Streak',
-                    subtitle: (user?.streak ?? 0) >= 7 ? 'Completed!' : '${user?.streak ?? 0} / 7 days',
+                    subtitle: (user?.streak ?? 0) >= 7
+                        ? 'Completed!'
+                        : '${user?.streak ?? 0} / 7 days',
                     isCompleted: (user?.streak ?? 0) >= 7,
                     progress: ((user?.streak ?? 0) / 7.0).clamp(0.0, 1.0),
                   ),
@@ -219,7 +294,32 @@ class ProfileScreen extends ConsumerWidget {
                     progress: 0.3,
                     isDisabled: true,
                   ),
-                  
+
+                  const SizedBox(height: 40),
+
+                  // Sign Out Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: handleSignOut,
+                      icon: const Icon(Icons.logout, color: Colors.redAccent),
+                      label: Text(
+                        'Sign Out',
+                        style: AppTypography.bodyMedium(
+                          color: Colors.redAccent,
+                        ).copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: const BorderSide(color: Color(0xFFF5EFE3)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        backgroundColor: AppColors.white,
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 100),
                 ],
               ),
@@ -233,16 +333,24 @@ class ProfileScreen extends ConsumerWidget {
   Widget _buildCosmetic(String emoji, String title, bool isLocked) {
     return Container(
       decoration: BoxDecoration(
-        color: isLocked ? AppColors.white.withValues(alpha: 0.5) : AppColors.white,
+        color: isLocked
+            ? AppColors.white.withValues(alpha: 0.5)
+            : AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isLocked ? const Color(0xFFF5EFE3).withValues(alpha: 0.5) : const Color(0xFFF5EFE3)),
-        boxShadow: isLocked ? null : [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(
+          color: isLocked
+              ? const Color(0xFFF5EFE3).withValues(alpha: 0.5)
+              : const Color(0xFFF5EFE3),
+        ),
+        boxShadow: isLocked
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: Stack(
         children: [
@@ -258,12 +366,19 @@ class ProfileScreen extends ConsumerWidget {
               children: [
                 Text(
                   emoji,
-                  style: TextStyle(fontSize: 28, color: isLocked ? Colors.grey : null),
+                  style: TextStyle(
+                    fontSize: 28,
+                    color: isLocked ? Colors.grey : null,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   title,
-                  style: AppTypography.bodySmall(color: isLocked ? const Color(0xFF5A5A5A) : const Color(0xFF1B1C1C)).copyWith(fontWeight: FontWeight.w600),
+                  style: AppTypography.bodySmall(
+                    color: isLocked
+                        ? const Color(0xFF5A5A5A)
+                        : const Color(0xFF1B1C1C),
+                  ).copyWith(fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -273,20 +388,33 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMilestone({required String icon, required String title, required String subtitle, required bool isCompleted, required double progress, bool isDisabled = false}) {
+  Widget _buildMilestone({
+    required String icon,
+    required String title,
+    required String subtitle,
+    required bool isCompleted,
+    required double progress,
+    bool isDisabled = false,
+  }) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isCompleted ? const Color(0xFFEBF5EB) : (isDisabled ? AppColors.white.withValues(alpha: 0.5) : AppColors.white),
+        color: isCompleted
+            ? const Color(0xFFEBF5EB)
+            : (isDisabled
+                  ? AppColors.white.withValues(alpha: 0.5)
+                  : AppColors.white),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFF5EFE3)),
-        boxShadow: isDisabled ? null : [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: isDisabled
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: Row(
         children: [
@@ -298,7 +426,13 @@ class ProfileScreen extends ConsumerWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Text(icon, style: TextStyle(fontSize: 20, color: isDisabled ? Colors.grey : null)),
+            child: Text(
+              icon,
+              style: TextStyle(
+                fontSize: 20,
+                color: isDisabled ? Colors.grey : null,
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -310,12 +444,16 @@ class ProfileScreen extends ConsumerWidget {
                   children: [
                     Text(
                       title,
-                      style: AppTypography.bodyMedium(color: const Color(0xFF2C4E30)).copyWith(fontWeight: FontWeight.bold),
+                      style: AppTypography.bodyMedium(
+                        color: const Color(0xFF2C4E30),
+                      ).copyWith(fontWeight: FontWeight.bold),
                     ),
                     if (!isCompleted)
                       Text(
                         subtitle,
-                        style: AppTypography.labelSmall(color: const Color(0xFF5A5A5A)).copyWith(fontSize: 10),
+                        style: AppTypography.labelSmall(
+                          color: const Color(0xFF5A5A5A),
+                        ).copyWith(fontSize: 10),
                       ),
                   ],
                 ),
@@ -348,7 +486,9 @@ class ProfileScreen extends ConsumerWidget {
                 if (isDisabled)
                   Text(
                     subtitle,
-                    style: AppTypography.labelSmall(color: const Color(0xFF5A5A5A)),
+                    style: AppTypography.labelSmall(
+                      color: const Color(0xFF5A5A5A),
+                    ),
                   ),
               ],
             ),
@@ -372,13 +512,13 @@ class _TrianglePainter extends CustomPainter {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
-    
+
     final path = Path()
       ..moveTo(0, size.height)
       ..lineTo(size.width / 2, 0)
       ..lineTo(size.width, size.height)
       ..close();
-      
+
     canvas.drawPath(path, paint);
   }
 

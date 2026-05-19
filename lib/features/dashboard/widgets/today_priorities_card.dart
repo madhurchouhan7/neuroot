@@ -4,6 +4,7 @@ import 'package:neuroot/core/theme/app_typography.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:neuroot/features/planning/providers/task_provider.dart';
+import 'package:neuroot/features/planning/screens/task_detail_screen.dart';
 
 class TodayPrioritiesCard extends ConsumerWidget {
   const TodayPrioritiesCard({super.key});
@@ -82,6 +83,12 @@ class TodayPrioritiesCard extends ConsumerWidget {
                     badgeBg: badgeBg,
                     bgColor: AppColors.white,
                     onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => TaskDetailScreen(task: t)),
+                      );
+                    },
+                    onToggle: () {
                       ref.read(taskNotifierProvider.notifier).toggleComplete(t.id, isCompleted: !t.isCompleted);
                     },
                   ),
@@ -101,6 +108,7 @@ class TodayPrioritiesCard extends ConsumerWidget {
     required Color badgeBg,
     required Color bgColor,
     required VoidCallback onTap,
+    required VoidCallback onToggle,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -112,21 +120,24 @@ class TodayPrioritiesCard extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 22,
-              height: 22,
-              decoration: BoxDecoration(
-                color: isDone ? const Color(0xFFEBF5EB) : Colors.transparent,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isDone ? AppColors.sageDark : const Color(0xFFDCD9D9), // surface-dim
-                  width: isDone ? 1 : 2,
+            GestureDetector(
+              onTap: onToggle,
+              child: Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: isDone ? const Color(0xFFEBF5EB) : Colors.transparent,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isDone ? AppColors.sageDark : const Color(0xFFDCD9D9), // surface-dim
+                    width: isDone ? 1 : 2,
+                  ),
                 ),
+                alignment: Alignment.center,
+                child: isDone
+                    ? const Icon(Icons.check, size: 14, color: AppColors.sageDark)
+                    : null,
               ),
-              alignment: Alignment.center,
-              child: isDone
-                  ? const Icon(Icons.check, size: 14, color: AppColors.sageDark)
-                  : null,
             ),
             const SizedBox(width: 12),
             Expanded(

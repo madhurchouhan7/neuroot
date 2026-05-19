@@ -174,8 +174,23 @@ class TaskNotifier extends Notifier<TaskActionState> {
     }
   }
 
+  Future<void> updateNotes(String taskId, String notes) async {
+    await updateTask(taskId, {'notes': notes});
+  }
+
+  Future<void> updateSubtasks(
+      String taskId, List<Map<String, dynamic>> subtasks) async {
+    await updateTask(taskId, {'subtasks': subtasks});
+  }
+
+  Future<void> updateTopics(
+      String taskId, List<Map<String, dynamic>> topics) async {
+    await updateTask(taskId, {'topics': topics});
+  }
+
   void clearMessages() => state = state.copyWith(clearMessages: true);
 }
 
 final taskNotifierProvider =
     NotifierProvider<TaskNotifier, TaskActionState>(TaskNotifier.new);
+
