@@ -13,7 +13,7 @@ class DashboardHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final greeting = ref.watch(userGreetingProvider);
+    final themeState = ref.watch(homeThemeStateProvider);
     final userState = ref.watch(userDocProvider);
     
     // We only access these safely if available, else we show fallbacks
@@ -31,13 +31,14 @@ class DashboardHeader extends ConsumerWidget {
           children: [
             Text(
               dateStr,
-              style: AppTypography.labelSmall(color: AppColors.primaryContainer)
-                  .copyWith(letterSpacing: 0.08, fontWeight: FontWeight.bold),
+              style: AppTypography.labelSmall(
+                color: themeState.isDark ? AppColors.textSecondary : AppColors.primaryContainer,
+              ).copyWith(letterSpacing: 0.08, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
-              greeting,
-              style: AppTypography.titleXL(color: const Color(0xFF2B2B2B)).copyWith(fontSize: 28),
+              themeState.greetingText,
+              style: AppTypography.titleXL(color: themeState.textColor).copyWith(fontSize: 28),
             ),
           ],
         ),
@@ -48,9 +49,12 @@ class DashboardHeader extends ConsumerWidget {
               width: 62,
               height: 62,
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF3C4), // bloom-yellow-soft
+                color: themeState.isDark ? const Color(0xFF222222) : const Color(0xFFFFF3C4), // bloom-yellow-soft
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.primaryContainer, width: 1.5),
+                border: Border.all(
+                  color: themeState.isDark ? themeState.accentColor.withValues(alpha: 0.5) : AppColors.primaryContainer,
+                  width: 1.5,
+                ),
               ),
               child: photoUrl != null && photoUrl.isNotEmpty
                 ? NeurootNetworkImage(
@@ -61,7 +65,11 @@ class DashboardHeader extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(18),
                     errorIcon: Icons.person_rounded,
                   )
-                : const Icon(Icons.person_rounded, color: AppColors.primaryContainer, size: 32),
+                : Icon(
+                    Icons.person_rounded,
+                    color: themeState.isDark ? AppColors.textSecondary : AppColors.primaryContainer,
+                    size: 32,
+                  ),
             ),
             Positioned(
               bottom: -4,
@@ -69,13 +77,15 @@ class DashboardHeader extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2B2B2B),
+                  color: themeState.isDark ? themeState.accentColor : const Color(0xFF2B2B2B),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.white),
+                  border: Border.all(color: themeState.isDark ? const Color(0xFF161616) : AppColors.white),
                 ),
                 child: Text(
                   'Lv $level',
-                  style: AppTypography.labelSmall(color: AppColors.white).copyWith(fontSize: 10, fontWeight: FontWeight.bold),
+                  style: AppTypography.labelSmall(
+                    color: themeState.isDark ? const Color(0xFF161616) : AppColors.white,
+                  ).copyWith(fontSize: 10, fontWeight: FontWeight.bold),
                 ),
               ),
             ),

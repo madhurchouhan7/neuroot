@@ -6,6 +6,9 @@ import 'package:neuroot/features/onboarding/providers/onboarding_provider.dart';
 import 'package:neuroot/shared/widgets/neuroot_widgets.dart';
 
 const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const double _gridHourHeight = 60.0; // 60 pixels per hour
+const double _gridStartHour = 8.0;   // starts at 8 AM
+const double _gridEndHour = 20.0;    // ends at 8 PM (12 hours total)
 
 class TimetableBuilderStep extends ConsumerStatefulWidget {
   final VoidCallback onNext;
@@ -18,6 +21,8 @@ class TimetableBuilderStep extends ConsumerStatefulWidget {
 
 class _TimetableBuilderStepState extends ConsumerState<TimetableBuilderStep> {
   int _selectedDayIndex = 0;
+  bool _isGridView = true; // Default to the interactive timeline grid view
+  double? _draggedOverHour; // For showing visual snap preview during drag
 
   Color _hexColor(String hex) {
     try {
@@ -27,9 +32,45 @@ class _TimetableBuilderStepState extends ConsumerState<TimetableBuilderStep> {
     }
   }
 
-  // ── Add Class bottom sheet ───────────────────────────────────────────────────
+  double _parseTimeToDouble(String t) {
+    try {
+      final clean = t.trim().toUpperCase();
+      if (clean.contains('AM') || clean.contains('PM')) {
+        final parts = clean.split(' ');
+        final timeParts = parts[0].split(':');
+        double h = double.parse(timeParts[0]);
+        final m = double.parse(timeParts[1]);
+        final isPm = parts[1] == 'PM';
+        if (isPm && h != 12) h += 12;
+        if (!isPm && h == 12) h = 0;
+        return h + (m / 60.0);
+      } else {
+        // 24h format e.g. "09:30"
+        final parts = clean.split(':');
+        final h = double.parse(parts[0]);
+        final m = double.parse(parts[1]);
+        return h + (m / 60.0);
+      }
+    } catch (_) {
+      return 9.0;
+    }
+  }
 
-  void _showAddClass() {
+  String _formatDoubleToTime(double h) {
+    final hourInt = h.toInt();
+    final minInt = ((h - hourInt) * 60).round();
+    
+    final period = hourInt >= 12 ? 'PM' : 'AM';
+    var displayHour = hourInt % 12;
+    if (displayHour == 0) displayHour = 12;
+    
+    final minStr = minInt.toString().padLeft(2, '0');
+    return '$displayHour:$minStr $period';
+  }
+
+  // ── Add/Edit Class bottom sheet ───────────────────────────────────────────────
+
+  void _showAddClass({double? prefilledStartHour}) {
     final subjects = ref.read(onboardingProvider).subjects;
     if (subjects.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -48,8 +89,20 @@ class _TimetableBuilderStepState extends ConsumerState<TimetableBuilderStep> {
     String selectedSubjectCode = subjects.first['code'] ?? '';
     final roomCtrl = TextEditingController();
     final profCtrl = TextEditingController();
+    
     TimeOfDay startTime = const TimeOfDay(hour: 9, minute: 0);
     TimeOfDay endTime = const TimeOfDay(hour: 10, minute: 30);
+
+    if (prefilledStartHour != null) {
+      final hourInt = prefilledStartHour.toInt();
+      final minInt = ((prefilledStartHour - hourInt) * 60).round();
+      startTime = TimeOfDay(hour: hourInt, minute: minInt);
+      
+      final endHourVal = prefilledStartHour + 1.0; // 1 hour default duration
+      final endHourInt = endHourVal.toInt();
+      final endMinInt = ((endHourVal - endHourInt) * 60).round();
+      endTime = TimeOfDay(hour: endHourInt % 24, minute: endMinInt);
+    }
 
     showModalBottomSheet(
       context: context,
@@ -69,16 +122,28 @@ class _TimetableBuilderStepState extends ConsumerState<TimetableBuilderStep> {
             child: Container(
               decoration: const BoxDecoration(
                 color: AppColors.warmCream,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
               ),
               padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Center(
+                    child: Container(
+                      width: 48,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD1C5AE),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Text(
                     'Add class for ${_days[_selectedDayIndex]}',
-                    style: AppTypography.titleMedium(color: AppColors.textPrimary),
+                    style: AppTypography.titleMedium(color: AppColors.textPrimary)
+                        .copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
 
@@ -104,8 +169,8 @@ class _TimetableBuilderStepState extends ConsumerState<TimetableBuilderStep> {
                             child: Row(
                               children: [
                                 Container(
-                                  width: 10,
-                                  height: 10,
+                                  width: 12,
+                                  height: 12,
                                   decoration: BoxDecoration(
                                       color: c, shape: BoxShape.circle),
                                 ),
@@ -161,7 +226,8 @@ class _TimetableBuilderStepState extends ConsumerState<TimetableBuilderStep> {
                         backgroundColor: AppColors.amber,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                            borderRadius: BorderRadius.circular(16)),
+                        elevation: 0,
                       ),
                       onPressed: () {
                         final sub = subjects.firstWhere(
@@ -298,13 +364,96 @@ class _TimetableBuilderStepState extends ConsumerState<TimetableBuilderStep> {
               Text('Build your timetable',
                   style: AppTypography.titleXL(color: AppColors.textPrimary)),
               const SizedBox(height: 6),
-              Text('Add your weekly classes. Color-code by subject.',
+              Text('Add your weekly classes. Try the interactive Timeline Builder!',
                   style:
                       AppTypography.bodyMedium(color: const Color(0xFF7F7662))),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
             ],
           ),
         ),
+
+        // Toggle: List View vs Timeline Builder Segment
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 4),
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0EBE3),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _isGridView = false),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: !_isGridView ? AppColors.white : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: !_isGridView ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          )
+                        ] : null,
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.list_rounded, size: 16, color: Color(0xFF7F7662)),
+                          const SizedBox(width: 6),
+                          Text(
+                            'List View',
+                            style: AppTypography.labelMedium(
+                              color: !_isGridView ? AppColors.textPrimary : const Color(0xFF7F7662),
+                            ).copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _isGridView = true),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _isGridView ? AppColors.white : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: _isGridView ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          )
+                        ] : null,
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.calendar_view_day_rounded, size: 16, color: Color(0xFF7F7662)),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Timeline Builder 🌱',
+                            style: AppTypography.labelMedium(
+                              color: _isGridView ? AppColors.textPrimary : const Color(0xFF7F7662),
+                            ).copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
 
         // Day tab bar
         SizedBox(
@@ -345,51 +494,13 @@ class _TimetableBuilderStepState extends ConsumerState<TimetableBuilderStep> {
             },
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
 
-        // Class list
+        // Content Area
         Expanded(
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            children: [
-              ...classes.asMap().entries.map((e) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _ClassCard(
-                      entry: e.value,
-                      onDelete: () => ref
-                          .read(onboardingProvider.notifier)
-                          .removeTimetableClass(selectedDay, e.key),
-                      hexColor: _hexColor,
-                    ),
-                  )),
-
-              // Add class button
-              GestureDetector(
-                onTap: _showAddClass,
-                child: Container(
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: AppColors.warmCream,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                        color: const Color(0xFFD1C5AE), width: 1.5),
-                  ),
-                  alignment: Alignment.center,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.add,
-                          size: 18, color: Color(0xFF7F7662)),
-                      const SizedBox(width: 6),
-                      Text('Add class for $selectedDay',
-                          style: AppTypography.labelLarge(
-                              color: const Color(0xFF7F7662))),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+          child: _isGridView 
+            ? _buildTimelineGrid(selectedDay, classes)
+            : _buildListView(selectedDay, classes),
         ),
 
         // Bottom CTA
@@ -403,6 +514,436 @@ class _TimetableBuilderStepState extends ConsumerState<TimetableBuilderStep> {
           ),
         ),
       ],
+    );
+  }
+
+  // ── 1. List View ─────────────────────────────────────────────────────────────
+
+  Widget _buildListView(String selectedDay, List<Map<String, dynamic>> classes) {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      children: [
+        ...classes.asMap().entries.map((e) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _ClassCard(
+                entry: e.value,
+                onDelete: () => ref
+                    .read(onboardingProvider.notifier)
+                    .removeTimetableClass(selectedDay, e.key),
+                hexColor: _hexColor,
+              ),
+            )),
+
+        // Add class button
+        GestureDetector(
+          onTap: () => _showAddClass(),
+          child: Container(
+            height: 56,
+            decoration: BoxDecoration(
+              color: AppColors.warmCream,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                  color: const Color(0xFFD1C5AE), width: 1.5),
+            ),
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.add,
+                    size: 18, color: Color(0xFF7F7662)),
+                const SizedBox(width: 6),
+                Text('Add class for $selectedDay',
+                    style: AppTypography.labelLarge(
+                        color: const Color(0xFF7F7662))),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── 2. Timeline Grid View ───────────────────────────────────────────────────
+
+  Widget _buildTimelineGrid(String selectedDay, List<Map<String, dynamic>> classes) {
+    final double totalHours = _gridEndHour - _gridStartHour;
+    final double gridHeight = totalHours * _gridHourHeight;
+
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Time axis column
+          Container(
+            width: 54,
+            height: gridHeight,
+            padding: const EdgeInsets.only(top: 8),
+            child: Stack(
+              children: List.generate(totalHours.toInt() + 1, (i) {
+                final double hr = _gridStartHour + i;
+                final double top = i * _gridHourHeight;
+                
+                String timeLabel = "";
+                if (hr == 12) timeLabel = "12 PM";
+                else if (hr > 12) timeLabel = "${(hr - 12).toInt()} PM";
+                else timeLabel = "${hr.toInt()} AM";
+
+                return Positioned(
+                  top: top,
+                  left: 0,
+                  child: Text(
+                    timeLabel,
+                    style: AppTypography.labelSmall(color: const Color(0xFF8B8070))
+                        .copyWith(fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                );
+              }),
+            ),
+          ),
+
+          // Main timeline canvas with DragTarget
+          Expanded(
+            child: DragTarget<Map<String, dynamic>>(
+              onWillAcceptWithDetails: (details) {
+                // Return true to allow dropping
+                return true;
+              },
+              onMove: (details) {
+                final RenderBox renderBox = context.findRenderObject() as RenderBox;
+                final localOffset = renderBox.globalToLocal(details.offset);
+                
+                // Estimate drop hour based on vertical offset relative to grid top
+                // Add scrolling offset into account if needed, but since it's local it is offset to this widget
+                double relativeY = localOffset.dy - 120; // approximate top padding
+                if (relativeY < 0) relativeY = 0;
+                
+                double calculatedHour = _gridStartHour + (relativeY / _gridHourHeight);
+                // Snap to nearest 15 minutes
+                calculatedHour = (calculatedHour * 4).round() / 4.0;
+                
+                if (calculatedHour >= _gridStartHour && calculatedHour < _gridEndHour) {
+                  setState(() {
+                    _draggedOverHour = calculatedHour;
+                  });
+                }
+              },
+              onLeave: (_) {
+                setState(() {
+                  _draggedOverHour = null;
+                });
+              },
+              onAcceptWithDetails: (details) {
+                final RenderBox renderBox = context.findRenderObject() as RenderBox;
+                final localOffset = renderBox.globalToLocal(details.offset);
+                
+                double relativeY = localOffset.dy - 120;
+                if (relativeY < 0) relativeY = 0;
+                
+                double calculatedHour = _gridStartHour + (relativeY / _gridHourHeight);
+                calculatedHour = (calculatedHour * 4).round() / 4.0;
+                
+                if (calculatedHour < _gridStartHour) calculatedHour = _gridStartHour;
+                if (calculatedHour > _gridEndHour - 0.5) calculatedHour = _gridEndHour - 0.5;
+
+                final data = details.data;
+                final int index = data['index'] as int;
+                final cls = data['class'] as Map<String, dynamic>;
+                
+                final double originalDuration = 
+                    _parseTimeToDouble(cls['endTime'] as String? ?? '') - 
+                    _parseTimeToDouble(cls['startTime'] as String? ?? '');
+
+                final double newStart = calculatedHour;
+                final double newEnd = calculatedHour + (originalDuration > 0 ? originalDuration : 1.0);
+
+                ref.read(onboardingProvider.notifier).updateTimetableClassTime(
+                  selectedDay,
+                  index,
+                  _formatDoubleToTime(newStart),
+                  _formatDoubleToTime(newEnd),
+                );
+
+                setState(() {
+                  _draggedOverHour = null;
+                });
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Rescheduled to ${_formatDoubleToTime(newStart)} 🌱',
+                        style: AppTypography.bodyMedium(color: AppColors.white)),
+                    backgroundColor: AppColors.sageDark,
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 1),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    margin: const EdgeInsets.all(16),
+                  ),
+                );
+              },
+              builder: (ctx, candidateData, rejectedData) {
+                return GestureDetector(
+                  onTapUp: (details) {
+                    final double relativeY = details.localPosition.dy;
+                    double tappedHour = _gridStartHour + (relativeY / _gridHourHeight);
+                    // Snap to nearest 30 mins
+                    tappedHour = (tappedHour * 2).round() / 2.0;
+                    _showAddClass(prefilledStartHour: tappedHour);
+                  },
+                  child: Container(
+                    height: gridHeight,
+                    decoration: BoxDecoration(
+                      color: AppColors.white.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFF0EBE3)),
+                    ),
+                    child: Stack(
+                      children: [
+                        // 1. Grid lines (dotted/dashed horizontal dividers)
+                        ...List.generate(totalHours.toInt() + 1, (i) {
+                          final double top = i * _gridHourHeight;
+                          return Positioned(
+                            top: top,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              height: 1,
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  top: BorderSide(
+                                    color: const Color(0xFFECEAE5),
+                                    style: i == 0 ? BorderStyle.solid : BorderStyle.solid,
+                                    width: 1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+
+                        // 2. Tapped prompt background overlay guide
+                        Positioned.fill(
+                          child: Center(
+                            child: Opacity(
+                              opacity: classes.isEmpty ? 0.6 : 0.0,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text('🌱', style: TextStyle(fontSize: 32)),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Tap any slot to add class',
+                                    style: AppTypography.bodySmall(color: const Color(0xFF7F7662)),
+                                  ),
+                                  Text(
+                                    'Drag cards to reschedule',
+                                    style: AppTypography.bodySmall(color: const Color(0xFF7F7662)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // 3. Visual preview of snaps during drag
+                        if (_draggedOverHour != null)
+                          Positioned(
+                            top: (_draggedOverHour! - _gridStartHour) * _gridHourHeight,
+                            left: 4,
+                            right: 4,
+                            height: _gridHourHeight,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.amber.withValues(alpha: 0.15),
+                                border: Border.all(color: AppColors.amber, width: 1.5),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                'Move here (${_formatDoubleToTime(_draggedOverHour!)})',
+                                style: AppTypography.labelSmall(color: AppColors.textPrimary)
+                                    .copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+
+                        // 4. Render absolutely positioned Class Cards!
+                        ...classes.asMap().entries.map((e) {
+                          final int idx = e.key;
+                          final cls = e.value;
+                          
+                          final double start = _parseTimeToDouble(cls['startTime'] as String? ?? '9:00 AM');
+                          final double end = _parseTimeToDouble(cls['endTime'] as String? ?? '10:30 AM');
+                          
+                          // Convert hours to positions
+                          double top = (start - _gridStartHour) * _gridHourHeight;
+                          double height = (end - start) * _gridHourHeight;
+                          
+                          // Constraints to avoid rendering outside the canvas
+                          if (top < 0) {
+                            height += top;
+                            top = 0;
+                          }
+                          if (height < 30) height = 30; // Min height for readability
+                          if (top + height > gridHeight) {
+                            height = gridHeight - top;
+                          }
+
+                          final color = _hexColor(cls['subjectColor'] as String? ?? '#A8D5BA');
+                          final code = cls['subjectCode'] as String? ?? '';
+                          final name = cls['subjectName'] as String? ?? '';
+                          final room = cls['room'] as String? ?? '';
+                          
+                          return Positioned(
+                            top: top + 2,
+                            left: 4,
+                            right: 4,
+                            height: height - 4,
+                            child: LongPressDraggable<Map<String, dynamic>>(
+                              data: {'index': idx, 'class': cls},
+                              feedback: Material(
+                                color: Colors.transparent,
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width - 100,
+                                  height: height - 4,
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: color,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.15),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        code,
+                                        style: AppTypography.labelLarge(color: AppColors.white)
+                                            .copyWith(fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(
+                                        'Dragging to reschedule...',
+                                        style: AppTypography.labelSmall(color: AppColors.white.withValues(alpha: 0.8)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              childWhenDragging: Opacity(
+                                opacity: 0.3,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: color.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: color, width: 1.5, style: BorderStyle.solid),
+                                  ),
+                                ),
+                              ),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: color.withValues(alpha: 0.05),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 5,
+                                      decoration: BoxDecoration(
+                                        color: color,
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(16),
+                                          bottomLeft: Radius.circular(16),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    name.isNotEmpty ? name : code,
+                                                    style: AppTypography.labelMedium(color: AppColors.textPrimary)
+                                                        .copyWith(fontWeight: FontWeight.bold),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    ref
+                                                        .read(onboardingProvider.notifier)
+                                                        .removeTimetableClass(selectedDay, idx);
+                                                  },
+                                                  child: Icon(
+                                                    Icons.close_rounded,
+                                                    size: 14,
+                                                    color: AppColors.textPrimary.withValues(alpha: 0.4),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Row(
+                                              children: [
+                                                const Icon(Icons.schedule, size: 10, color: Color(0xFF7F7662)),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  '${cls['startTime']} – ${cls['endTime']}',
+                                                  style: AppTypography.labelSmall(color: const Color(0xFF7F7662))
+                                                      .copyWith(fontSize: 10),
+                                                ),
+                                                if (room.isNotEmpty) ...[
+                                                  const SizedBox(width: 8),
+                                                  const Icon(Icons.location_on_outlined, size: 10, color: Color(0xFF7F7662)),
+                                                  const SizedBox(width: 2),
+                                                  Text(
+                                                    room,
+                                                    style: AppTypography.labelSmall(color: const Color(0xFF7F7662))
+                                                        .copyWith(fontSize: 10),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

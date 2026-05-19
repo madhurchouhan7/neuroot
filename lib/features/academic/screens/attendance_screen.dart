@@ -8,6 +8,7 @@ import 'package:neuroot/features/academic/screens/subject_detail_screen.dart';
 import 'package:neuroot/features/academic/widgets/attendance_subject_card.dart';
 import 'package:neuroot/features/academic/widgets/overall_attendance_card.dart';
 import 'package:neuroot/features/academic/widgets/attendance_heatmap.dart';
+import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
 
 class AttendanceScreen extends ConsumerWidget {
   const AttendanceScreen({super.key});
@@ -65,6 +66,11 @@ class AttendanceScreen extends ConsumerWidget {
         elevation: 0,
         centerTitle: true,
         automaticallyImplyLeading: false,
+
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF2B2B2B)),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(
           'Attendance',
           style: AppTypography.titleMedium(
@@ -497,28 +503,47 @@ class _EmptySubjectsCard extends StatelessWidget {
     return GestureDetector(
       onTap: onAdd,
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        width: double.infinity,
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(color: const Color(0xFFE8E0D4), width: 1.5),
         ),
         child: Column(
           children: [
-            const Icon(
-              Icons.school_outlined,
-              color: AppColors.primaryContainer,
-              size: 40,
+            Opacity(
+              opacity: 0.85,
+              child: NeurootNetworkImage(
+                url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCGAc2fsEi31o6PdDuRC1oBoT9gJ1hvP1bw2p3t1AxUd_f6t9fb9q4ONR5jhWot8mHDR8mCmFZK2jpkwleXbgbq6W_yf_0C9qakFGZo6fnJhEK3eb5ZJZASllQ7hsgMHUhwAOKDnDxH0DfvIWdTONSgtucV1ZmZ1VWz6KBx8KGqE6rty14jS_SzE4CVXuv_bGlNeM6f_DQRkitsZp7NYujmbxrzNT6mCG7OIBcf5wHJB6HGi7RAoLZ4OX21fReh4abVUaRgGve9pqk', // Placeholder for Sprout with clipboard
+                height: 140,
+                fit: BoxFit.contain,
+                errorIcon: Icons.assignment_outlined,
+                placeholderColor: Colors.transparent,
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             Text(
-              'No subjects yet 🌱',
+              'No attendance tracked yet',
               style: AppTypography.titleSmall(color: AppColors.textPrimary),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Text(
-              'Tap here to add your first subject',
+              'Mark your first class today and Sprout\nwill start tracking your progress.',
               style: AppTypography.bodyMedium(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.primaryContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Mark Today\'s Classes →',
+                style: AppTypography.buttonMedium(color: AppColors.textPrimary),
+              ),
             ),
           ],
         ),

@@ -11,6 +11,16 @@ import '../../features/auth/screens/landing_screen.dart';
 import '../../features/auth/screens/sign_in_screen.dart';
 import '../../features/auth/screens/sign_up_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
+import '../../features/settings/screens/settings_screen.dart';
+import '../../features/settings/screens/edit_profile_screen.dart';
+import '../../features/settings/screens/edit_semester_screen.dart';
+import '../../features/settings/screens/notification_settings_screen.dart';
+import '../../features/settings/screens/appearance_settings_screen.dart';
+import '../../features/settings/screens/export_data_screen.dart';
+import '../../features/settings/screens/help_feedback_screen.dart';
+import '../../features/settings/screens/delete_account_screen.dart';
+import '../../features/planning/screens/ai_roadmap_detail_screen.dart';
+import '../../features/system/screens/offline_screen.dart';
 
 // ─── Refresh Listenable ───────────────────────────────────────────────────────
 
@@ -136,6 +146,24 @@ GoRouter buildAppRouter(WidgetRef ref) {
         ),
       ),
 
+      // ── AI Roadmap Detail ──────────────────────────────────────────────────
+      GoRoute(
+        path: '/ai-roadmap',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          child: const AiRoadmapDetailScreen(),
+          transitionsBuilder: _fadeSlideTransition,
+        ),
+      ),
+
+      // ── Offline Screen ─────────────────────────────────────────────────────
+      GoRoute(
+        path: '/offline',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          child: const OfflineScreen(),
+          transitionsBuilder: _fadeSlideTransition,
+        ),
+      ),
+
       // ── Main App Shell ─────────────────────────────────────────────────────
       GoRoute(
         path: '/home',
@@ -143,6 +171,66 @@ GoRouter buildAppRouter(WidgetRef ref) {
           child: const AppShell(),
           transitionsBuilder: _fadeSlideTransition,
         ),
+      ),
+
+      // ── Settings ───────────────────────────────────────────────────────────
+      GoRoute(
+        path: '/settings',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          child: const SettingsScreen(),
+          transitionsBuilder: _fadeSlideTransition,
+        ),
+        routes: [
+          GoRoute(
+            path: 'edit_profile',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              child: const EditProfileScreen(),
+              transitionsBuilder: _fadeSlideTransition,
+            ),
+          ),
+          GoRoute(
+            path: 'edit_semester',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              child: const EditSemesterScreen(),
+              transitionsBuilder: _fadeSlideTransition,
+            ),
+          ),
+          GoRoute(
+            path: 'notifications',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              child: const NotificationSettingsScreen(),
+              transitionsBuilder: _fadeSlideTransition,
+            ),
+          ),
+          GoRoute(
+            path: 'appearance',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              child: const AppearanceSettingsScreen(),
+              transitionsBuilder: _fadeSlideTransition,
+            ),
+          ),
+          GoRoute(
+            path: 'export_data',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              child: const ExportDataScreen(),
+              transitionsBuilder: _fadeSlideTransition,
+            ),
+          ),
+          GoRoute(
+            path: 'help_feedback',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              child: const HelpFeedbackScreen(),
+              transitionsBuilder: _fadeSlideTransition,
+            ),
+          ),
+          GoRoute(
+            path: 'delete_account',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              child: const DeleteAccountScreen(),
+              transitionsBuilder: _fadeSlideTransition,
+            ),
+          ),
+        ],
       ),
     ],
   );

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -131,13 +132,32 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = state.copyWith(timetable: updated);
   }
 
+  void updateTimetableClassTime(String day, int index, String newStart, String newEnd) {
+    final updated = Map<String, List<Map<String, dynamic>>>.from(state.timetable);
+    final dayList = <Map<String, dynamic>>[...(updated[day] ?? [])];
+    if (index >= 0 && index < dayList.length) {
+      dayList[index] = {
+        ...dayList[index],
+        'startTime': newStart,
+        'endTime': newEnd,
+      };
+      updated[day] = dayList;
+      state = state.copyWith(timetable: updated);
+    }
+  }
+
   // ── Save to Firestore (post-auth) ────────────────────────────────────────────
 
   Future<bool> createSemester() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final now = DateTime.now();
-      final semId = await _fs.addDoc('users/$_uid/semesters', {
+      final batch = _fs.getBatch();
+      
+      // 1. Semester Document
+      final semRef = _fs.collection('users/$_uid/semesters').doc();
+      final semId = semRef.id;
+      batch.set(semRef, {
         'name': state.semesterName.isNotEmpty ? state.semesterName : 'My Semester',
         'startDate': Timestamp.fromDate(state.startDate ?? now),
         'endDate': Timestamp.fromDate(state.endDate ?? now.add(const Duration(days: 120))),
@@ -145,10 +165,11 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
         'isActive': true,
       });
 
-      // Write subjects, collect code→id map
+      // 2. Subjects Documents
       final subjectIds = <String, String>{};
       for (final sub in state.subjects) {
-        final id = await _fs.addDoc('users/$_uid/subjects', {
+        final subRef = _fs.collection('users/$_uid/subjects').doc();
+        batch.set(subRef, {
           'name': sub['name'] ?? '',
           'code': sub['code'] ?? '',
           'color': sub['color'] ?? '#A8D5BA',
@@ -157,13 +178,14 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
           'presentClasses': 0,
           'cancelledClasses': 0,
         });
-        subjectIds[sub['code'] ?? ''] = id;
+        subjectIds[sub['code'] ?? ''] = subRef.id;
       }
 
-      // Write timetable entries
+      // 3. Timetable Documents
       for (final entry in state.timetable.entries) {
         for (final cls in entry.value) {
-          await _fs.addDoc('users/$_uid/timetable', {
+          final timeRef = _fs.collection('users/$_uid/timetable').doc();
+          batch.set(timeRef, {
             'day': entry.key,
             'dayOfWeek': _dayIndex(entry.key), // int 0=Mon…6=Sun
             'subjectName': cls['subjectName'] ?? '',
@@ -179,12 +201,17 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
         }
       }
 
+      // Commit the batch atomically
+      await batch.commit();
+      debugPrint('[OnboardingNotifier] batch committed successfully for semester: $semId');
+
       state = state.copyWith(isLoading: false);
       return true;
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('[OnboardingNotifier] error creating semester: $e\n$stack');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: "Couldn't save your semester. Try again 🌱",
+        errorMessage: "Couldn't save your semester: ${e.toString().split('\n').first}",
       );
       return false;
     }
@@ -198,11 +225,13 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
         'lastActiveDate': FieldValue.serverTimestamp(),
       });
       ref.invalidate(userDocProvider);
+      debugPrint('[OnboardingNotifier] onboarding completed successfully for user: $_uid');
       state = state.copyWith(isLoading: false, isComplete: true);
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('[OnboardingNotifier] error completing onboarding: $e\n$stack');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: "Couldn't complete setup. Try again 🌱",
+        errorMessage: "Couldn't complete setup: ${e.toString().split('\n').first}",
       );
     }
   }

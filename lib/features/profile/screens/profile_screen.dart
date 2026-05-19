@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
-
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:neuroot/features/auth/providers/auth_provider.dart';
 import 'package:neuroot/features/auth/providers/user_provider.dart';
@@ -82,6 +82,11 @@ class ProfileScreen extends ConsumerWidget {
           ).copyWith(fontSize: 24),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_rounded, color: AppColors.textSecondary),
+            tooltip: 'Settings',
+            onPressed: () => context.push('/settings'),
+          ),
           IconButton(
             icon: const Icon(Icons.logout, color: AppColors.primaryContainer),
             onPressed: handleSignOut,

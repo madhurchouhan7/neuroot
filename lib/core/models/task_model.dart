@@ -94,7 +94,7 @@ class TaskModel {
       title: data['title'] as String? ?? '',
       subjectId: data['subjectId'] as String? ?? '',
       type: TaskTypeExtension.fromString(data['type'] as String? ?? 'task'),
-      dueDate: (data['dueDate'] as Timestamp).toDate(),
+      dueDate: (data['dueDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
       priority: TaskPriorityExtension.fromString(
           data['priority'] as String? ?? 'medium'),
       isCompleted: data['isCompleted'] as bool? ?? false,

@@ -171,7 +171,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     ),
                   ),
                 ),
-                error: (e, _) => SliverToBoxAdapter(
+                error: (e, stack) {
+                  debugPrint('[PlannerScreen] Error loading tasks: $e\n$stack');
+                  return SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -184,14 +186,15 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
-                        "Couldn't load tasks. Check connection 🌱",
+                        "Couldn't load tasks: ${e.toString().split('\n').first}",
                         style: AppTypography.bodyMedium(
                           color: const Color(0xFFE05C5C),
                         ),
                       ),
                     ),
                   ),
-                ),
+                );
+                },
                 data: (allTasks) {
                   final tasks = _applyFilter(allTasks, filter);
                   final incomplete = tasks

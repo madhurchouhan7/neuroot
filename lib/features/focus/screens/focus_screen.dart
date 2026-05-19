@@ -242,14 +242,14 @@ class _ActiveState extends StatelessWidget {
                           height: 140,
                           decoration: BoxDecoration(
                             color: isBreak
-                                ? AppColors.sageDark
+                                ? const Color(0xFFFFB703) // Warm amber for break
                                 : AppColors.primaryContainer,
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
                                 color:
                                     (isBreak
-                                            ? AppColors.sageDark
+                                            ? const Color(0xFFFFB703)
                                             : AppColors.primaryContainer)
                                         .withValues(alpha: 0.2),
                                 blurRadius: 40,
@@ -257,13 +257,25 @@ class _ActiveState extends StatelessWidget {
                             ],
                           ),
                         ),
-                        NeurootNetworkImage(
-                          url:
-                              'https://lh3.googleusercontent.com/aida-public/AB6AXuBXNerXP1G6X3A4IkM1-sZgIDU5pg_S9Mqid8sIA3oJQngA4P3lp9fiM8n8UPRxAa5Pu58pUIZDfdD0Dh6v84a9mtjuHMHMUdNzPLD73L4GzSjQ77sKanNmqkLILdcft4TFhXw5NnjUj52B8uOnuADfelGENWzX68vuzHh8RGZB8FWU-d12LSgvPUrkTowzuWqowSQtA4VIexr0VF5QUfh27OnxE9mInIqSy-c2kd-pskjBvPetgDWdQ3_c7sfHG9LnmiWe1jgT53o',
-                          fit: BoxFit.contain,
-                          errorIcon: Icons.eco,
-                          placeholderColor: Colors.transparent,
-                        ),
+                        isBreak
+                            ? Transform.scale(
+                                scaleX: 1.3,
+                                scaleY: 0.85,
+                                child: NeurootNetworkImage(
+                                  url:
+                                      'https://lh3.googleusercontent.com/aida-public/AB6AXuBXNerXP1G6X3A4IkM1-sZgIDU5pg_S9Mqid8sIA3oJQngA4P3lp9fiM8n8UPRxAa5Pu58pUIZDfdD0Dh6v84a9mtjuHMHMUdNzPLD73L4GzSjQ77sKanNmqkLILdcft4TFhXw5NnjUj52B8uOnuADfelGENWzX68vuzHh8RGZB8FWU-d12LSgvPUrkTowzuWqowSQtA4VIexr0VF5QUfh27OnxE9mInIqSy-c2kd-pskjBvPetgDWdQ3_c7sfHG9LnmiWe1jgT53o',
+                                  fit: BoxFit.contain,
+                                  errorIcon: Icons.eco,
+                                  placeholderColor: Colors.transparent,
+                                ),
+                              )
+                            : NeurootNetworkImage(
+                                url:
+                                    'https://lh3.googleusercontent.com/aida-public/AB6AXuBXNerXP1G6X3A4IkM1-sZgIDU5pg_S9Mqid8sIA3oJQngA4P3lp9fiM8n8UPRxAa5Pu58pUIZDfdD0Dh6v84a9mtjuHMHMUdNzPLD73L4GzSjQ77sKanNmqkLILdcft4TFhXw5NnjUj52B8uOnuADfelGENWzX68vuzHh8RGZB8FWU-d12LSgvPUrkTowzuWqowSQtA4VIexr0VF5QUfh27OnxE9mInIqSy-c2kd-pskjBvPetgDWdQ3_c7sfHG9LnmiWe1jgT53o',
+                                fit: BoxFit.contain,
+                                errorIcon: Icons.eco,
+                                placeholderColor: Colors.transparent,
+                              ),
                       ],
                     ),
                   ),
@@ -304,7 +316,7 @@ class _ActiveState extends StatelessWidget {
                             strokeWidth: 6,
                             backgroundColor: const Color(0xFF2A2620),
                             color: isBreak
-                                ? AppColors.sageDark
+                                ? const Color(0xFFFFB703) // Warm amber
                                 : AppColors.primaryContainer,
                           ),
                         ),
@@ -477,32 +489,110 @@ class _CompletedState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(userDocProvider).asData?.value;
+    final xpEarned = focus.totalSeconds ~/ 60; // 1 XP per minute focused
+    
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
         SliverFillRemaining(
           hasScrollBody: false,
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('🎉', style: TextStyle(fontSize: 64)),
+                const Spacer(),
+                const Text('🏆', style: TextStyle(fontSize: 72)),
                 const SizedBox(height: 24),
                 Text(
-                  'Session Complete!',
-                  style: AppTypography.titleXL(color: AppColors.white),
+                  'Focus Complete!',
+                  style: AppTypography.titleXL(color: AppColors.white).copyWith(fontSize: 32),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
-                  'You focused for ${focus.totalSeconds ~/ 60} minutes.',
+                  'You focused deeply for ${focus.totalSeconds ~/ 60} minutes.\nGreat job staying on track.',
                   style: AppTypography.bodyMedium(
-                    color: const Color(0xFF6B6560),
-                  ),
+                    color: const Color(0xFF8B857F),
+                  ).copyWith(height: 1.5),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 40),
+                
+                // Achievements Dashboard
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF272420),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: const Color(0xFF38342F)),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFB703).withValues(alpha: 0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.bolt_rounded, color: Color(0xFFFFB703), size: 24),
+                              ),
+                              const SizedBox(width: 16),
+                              Text(
+                                'XP Earned',
+                                style: AppTypography.titleMedium(color: AppColors.white),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            '+$xpEarned XP',
+                            style: AppTypography.titleMedium(color: const Color(0xFFFFB703))
+                                .copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Divider(color: Color(0xFF38342F), height: 1),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFF8A65).withValues(alpha: 0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.local_fire_department_rounded, color: Color(0xFFFF8A65), size: 24),
+                              ),
+                              const SizedBox(width: 16),
+                              Text(
+                                'Current Streak',
+                                style: AppTypography.titleMedium(color: AppColors.white),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            '${user?.streak ?? 1} Days',
+                            style: AppTypography.titleMedium(color: const Color(0xFFFF8A65))
+                                .copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const Spacer(),
                 BounceButton(
                   onTap: () => ref.read(focusProvider.notifier).startBreak(),
                   child: Container(
@@ -522,19 +612,22 @@ class _CompletedState extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 BounceButton(
-                  onTap: () => ref.read(focusProvider.notifier).reset(),
+                  onTap: () {
+                    // In a real app we'd dispatch XP update here, e.g. ref.read(userDocProvider.notifier).addXp(xpEarned);
+                    ref.read(focusProvider.notifier).reset();
+                  },
                   child: Container(
                     height: 56,
                     decoration: BoxDecoration(
-                      color: Colors.transparent,
+                      color: const Color(0xFF272420),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF6B6560)),
+                      border: Border.all(color: const Color(0xFF38342F)),
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      'End Session',
+                      'Claim & End Session',
                       style: AppTypography.titleMedium(
-                        color: const Color(0xFF6B6560),
+                        color: AppColors.white,
                       ).copyWith(fontSize: 16),
                     ),
                   ),

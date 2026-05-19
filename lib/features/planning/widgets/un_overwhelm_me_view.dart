@@ -4,6 +4,7 @@ import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/features/planning/providers/task_provider.dart';
 import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
+import 'package:go_router/go_router.dart';
 
 class UnOverwhelmMeView extends ConsumerWidget {
   const UnOverwhelmMeView({super.key});
@@ -183,30 +184,33 @@ class UnOverwhelmMeView extends ConsumerWidget {
                 
                 const SizedBox(height: 24),
                 
-                Container(
-                  width: double.infinity,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Start first microtask (15:00)',
-                        style: AppTypography.titleSmall(color: const Color(0xFF6D5400)).copyWith(fontSize: 16),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.timer, color: Color(0xFF6D5400), size: 20),
-                    ],
+                GestureDetector(
+                  onTap: () => context.push('/ai-roadmap'),
+                  child: Container(
+                    width: double.infinity,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'View Full AI Roadmap',
+                          style: AppTypography.titleSmall(color: const Color(0xFF6D5400)).copyWith(fontSize: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.arrow_forward_rounded, color: Color(0xFF6D5400), size: 20),
+                      ],
+                    ),
                   ),
                 ),
               ],

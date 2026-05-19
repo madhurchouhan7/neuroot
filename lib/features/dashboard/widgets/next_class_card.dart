@@ -18,26 +18,36 @@ class NextClassCard extends ConsumerWidget {
     TimetableEntry? nextClass;
     final now = TimeOfDay.now();
     for (var c in classes) {
+      // Determine the end time to check if class is still ongoing/upcoming
+      String endStr = c.endTime;
+      if (endStr.isEmpty) endStr = c.startTime; // Fallback
+
       // Clean up legacy 12-hour formats just in case
-      String t = c.startTime;
-      if (t.toUpperCase().contains('AM') || t.toUpperCase().contains('PM')) {
+      if (endStr.toUpperCase().contains('AM') || endStr.toUpperCase().contains('PM')) {
         try {
-          final parts = t.split(' ');
+          final parts = endStr.split(' ');
           final timeParts = parts[0].split(':');
           int h = int.parse(timeParts[0]);
           final m = int.parse(timeParts[1]);
           final isPm = parts[1].toUpperCase() == 'PM';
           if (isPm && h != 12) h += 12;
           if (!isPm && h == 12) h = 0;
-          t = '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
+          endStr = '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
         } catch (_) {}
       }
 
-      final parts = t.split(':');
+      final parts = endStr.split(':');
       if (parts.length == 2) {
-        final h = int.tryParse(parts[0]) ?? 0;
-        final m = int.tryParse(parts[1]) ?? 0;
-        if (h > now.hour || (h == now.hour && m >= now.minute)) {
+        int h = int.tryParse(parts[0]) ?? 0;
+        int m = int.tryParse(parts[1]) ?? 0;
+        
+        // If endTime was missing and we fell back to startTime, assume class is 1 hour long
+        if (c.endTime.isEmpty) {
+           h += 1;
+        }
+
+        // A class is relevant if its end time has NOT passed yet.
+        if (h > now.hour || (h == now.hour && m > now.minute)) {
           nextClass = c;
           break;
         }

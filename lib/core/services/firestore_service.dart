@@ -54,6 +54,9 @@ class FirestoreService {
 
   // ─── Batch / Transaction ─────────────────────────────────────────────────
 
+  /// Get a WriteBatch instance for executing multiple operations atomically.
+  WriteBatch getBatch() => _db.batch();
+
   /// Run a Firestore transaction.
   Future<T> runTransaction<T>(
     Future<T> Function(Transaction) updateFunction,

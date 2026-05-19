@@ -16,11 +16,11 @@ class NeurootNavBar extends StatelessWidget {
   });
 
   static const _items = [
-    _NavItem(icon: Icons.home_rounded, label: 'Home'),
-    _NavItem(icon: Icons.calendar_today_rounded, label: 'Planner'),
-    _NavItem(icon: Icons.timer_rounded, label: 'Focus'),
-    _NavItem(icon: Icons.school_rounded, label: 'Academic'),
-    _NavItem(icon: Icons.person_rounded, label: 'Profile'),
+    _NavItem(icon: Icons.cottage_rounded, label: 'Home'),
+    _NavItem(icon: Icons.edit_calendar_rounded, label: 'Planner'),
+    _NavItem(icon: Icons.local_florist_rounded, label: 'Focus'),
+    _NavItem(icon: Icons.backpack_rounded, label: 'Academic'),
+    _NavItem(icon: Icons.face_rounded, label: 'Profile'),
   ];
 
   @override
