@@ -26,21 +26,25 @@ class DashboardHeader extends ConsumerWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              dateStr,
-              style: AppTypography.labelSmall(
-                color: themeState.isDark ? AppColors.textSecondary : AppColors.primaryContainer,
-              ).copyWith(letterSpacing: 0.08, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              themeState.greetingText,
-              style: AppTypography.titleXL(color: themeState.textColor).copyWith(fontSize: 28),
-            ),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                dateStr,
+                style: AppTypography.labelSmall(
+                  color: themeState.isDark ? AppColors.textSecondary : AppColors.primaryContainer,
+                ).copyWith(letterSpacing: 0.08, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                themeState.greetingText,
+                style: AppTypography.titleXL(color: themeState.textColor).copyWith(fontSize: 28),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+            ],
+          ),
         ),
         Stack(
           clipBehavior: Clip.none,

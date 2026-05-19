@@ -1,380 +1,125 @@
-# Neuroot — Firebase + Riverpod Implementation Plan 🌱
+# Implementation Plan — Neuroot MVP Gap Analysis & Roadmap 🌿
 
-**Goal:** Wire up the complete Firebase backend and Riverpod state management so every screen in the app is live, functional, and persisting real data — following only what the docs specify for the MVP.
-
----
-
-## What the Docs Say to Build (MVP Scope)
-
-From `requirements.md` §11.1 and `MVP-roadmap.md` Phase 1:
-
-| Feature | Priority |
-|---|---|
-| Firebase Auth (Google + Email) | 🔴 Critical |
-| Onboarding (semester + subjects + timetable) | 🔴 Critical |
-| Attendance tracking (mark, %, safe-leave calc) | 🔴 Critical |
-| Task / Assignment / Planner CRUD | 🔴 Critical |
-| Dashboard (live greeting, today classes, top tasks, attendance alerts) | 🔴 Critical |
-| Focus Mode (Pomodoro timer, session persistence) | 🔴 Critical |
-| Emotional Check-in (mood + energy log) | 🟠 High |
-| Insights (basic study time + attendance charts) | 🟠 High |
-| Profile / Sprout XP system | 🟠 High |
-
-**NOT in this plan (excluded per docs):**
-- AI features (Phase 3, separate plan)
-- Social / chat / collaborative rooms
-- Home screen widgets
-- Push notifications (Phase 1 local only, separate)
-- Advanced analytics / Crashlytics
+This document details the comprehensive gap analysis between the Neuroot Product Requirements, App Flow Navigation Map, and UI/UX Instructions, compared to the current codebase implementation. It provides a structured plan to resolve all discrepancies, bugs, and missing features.
 
 ---
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **Firebase project must already exist** with `google-services.json` placed in `android/app/`. The Firebase console must have:
-> - Authentication enabled (Email/Password + Google Sign-In)
-> - Firestore enabled in test mode initially
->
-> If `google-services.json` is not yet set up, please do that first and tell me.
-
-> [!WARNING]
-> **New packages needed** in `pubspec.yaml`:
-> - `google_sign_in: ^6.2.2` — Google OAuth
-> - `flutter_secure_storage: ^9.2.4` — token + biometric flag storage (per tech-stack doc)
-> - `shared_preferences: ^2.5.3` — onboarding-complete flag
-> - `hive_generator: ^2.0.1` (dev) — for Hive model codegen
-> - `fl_chart: ^0.70.2` — charts on Insights screen (already implied by docs)
->
-> Confirm you want these added.
+> The primary gaps reside in the **AI Features (Gemini Integration)**, **Auth Flow completeness (Verification & Forgot Password Screens)**, **Focus Mode State Transitions**, and the **Mascot Companion Interaction Layer**.
 
 ---
 
-## Firestore Data Schema
+## Gap Analysis Matrix
 
-Based on `requirements.md` §6.3–6.11 data fields:
+We have cataloged every missing or partially-implemented element under the following tiers of the Neuroot specification:
 
-```
-users/{uid}
-  ├── displayName: string
-  ├── email: string
-  ├── photoUrl: string
-  ├── college: string
-  ├── onboardingComplete: bool
-  ├── xp: int
-  ├── level: int
-  ├── streak: int
-  └── lastActiveDate: timestamp
+### 1. Authentication Flow (Gaps in Tier 2 & 3)
+- [ ] **A3: Email Verification Screen**: Missing. The signup process currently logs the user in immediately without verification.
+- [ ] **A5: Forgot Password Screen**: Missing. The `AuthNotifier` has the method `sendPasswordReset` but no interface is wired to it.
+- [ ] **A6: Biometric Setup / login**: Missing. Biometric toggle button on the Sign In page is a static UI asset, not functional.
+- [ ] **Sign Out Screen Transition Bug**: Sign-out was previously redirecting to Profile screen instead of clean landing screen; now resolved, but requires verification.
 
-users/{uid}/semesters/{semId}
-  ├── name: string
-  ├── startDate: timestamp
-  ├── endDate: timestamp
-  ├── attendanceThreshold: int (75/80/85)
-  └── isActive: bool
+### 2. Onboarding Flow (Gaps in Tier 4)
+- [ ] **Onboarding Step State &Confetti**: Missing confetti on completing onboarding screen page O4 ("Let's Neuroot! 🌱").
+- [ ] **Onboarding Bypass / Empty State H5**: The app lacks the warning / skip conformation dialog `D5` when onboarding is bypassed, nor does the home dashboard gracefully display the correct setup card if subjects are empty.
 
-users/{uid}/subjects/{subId}
-  ├── name: string
-  ├── code: string
-  ├── color: string (hex)
-  ├── semesterId: string
-  ├── totalClasses: int
-  ├── presentClasses: int
-  └── cancelledClasses: int
+### 3. Home Dashboard (Gaps in Tier 5)
+- [ ] **Mood-to-Mascot State Engine**: Selecting a mood emoji updates the database provider but has no visual reflection or expression change on the Sprout avatar.
+- [ ] **Exam Week Mode (H4)**: Lacks dynamic detection of upcoming exams (within 3 days) to switch the dashboard theme to the Purple Exam Theme.
+- [ ] **Dynamic Theme Transitions**: The dashboard does not transition its warm/night color gradients dynamically based on actual phone local system hour (6AM-11AM morning, 12PM-5PM afternoon, 6PM-9PM evening, 9PM+ night).
 
-users/{uid}/timetable/{entryId}
-  ├── subjectId: string
-  ├── subjectName: string
-  ├── dayOfWeek: int (0=Mon…6=Sun)
-  ├── startTime: string ("09:00")
-  ├── endTime: string ("10:00")
-  └── room: string
+### 4. Attendance Flow (Gaps in Tier 6)
+- [ ] **What-If Calculator & Safe Leave**: The subject details calculator does not currently use the intelligent AI attendance prediction engine mentioned in Section 6.6 of the PRD.
+- [ ] **Sort by Risk Toggle**: Missing on the Attendance Overview screen.
 
-users/{uid}/attendance/{recordId}
-  ├── subjectId: string
-  ├── date: timestamp
-  └── status: string ("present" | "absent" | "cancelled")
+### 5. Planner Flow (Gaps in Tier 7)
+- [ ] **Drag-to-Reorder Tasks**: Long-pressing a task card does not trigger task reordering.
+- [ ] **Swipe-to-Action Gestures**: Swiping task cards left/right does not trigger immediate delete (red) or complete (green) states.
 
-users/{uid}/tasks/{taskId}
-  ├── title: string
-  ├── subjectId: string
-  ├── type: string ("assignment" | "exam" | "lab" | "task")
-  ├── dueDate: timestamp
-  ├── priority: string ("high" | "medium" | "low")
-  ├── isCompleted: bool
-  ├── completedAt: timestamp?
-  └── notes: string
+### 6. Focus Mode (Gaps in Tier 8)
+- [ ] **F2: Focus Break Mode Screen**: The layout remains largely identical without changing to the warm-amber break color palette or showing a relaxing Sprout animation.
+- [ ] **F3: Session Complete Overlay**: Missing the congratulatory overlay with streak milestones and custom task status linkages.
+- [ ] **Focus Mid-session Dialogs**:
+  - `D3: Switch Focus Mode confirmation` (Mid-session mode switch) is missing.
+  - `D4: Restart session confirmation` is missing.
+- [ ] **Phone Distraction Nudge**: Missing the screen-check or background push notification if the app remains in focus but user is inactive.
 
-users/{uid}/focusSessions/{sessionId}
-  ├── date: timestamp
-  ├── durationMinutes: int
-  ├── sessionsCompleted: int
-  └── linkedTaskId: string?
+### 7. Sprout Companion / Mascot (Gaps in Tier 9)
+- [ ] **Sprout Interactive Dress-up Grid (M2)**: Unlocked cosmetics (like the Scholar Hat 🎓) cannot be selected or equipped to change Sprout's avatar representation.
+- [ ] **XP & Level Up Toast (D6)**: Gaining XP does not show the rich custom banner overlay when Sprout levels up.
 
-users/{uid}/moodLogs/{logId}
-  ├── date: timestamp
-  ├── mood: string ("happy" | "focused" | "tired" | "overwhelmed" | "calm" | "anxious")
-  └── energy: int (1-5)
+### 8. AI Roadmap & Microtasks (Gaps in Tier 10 & Section 6.10)
+- [ ] **Dynamic Microtask Breakdown**: The "15-Minute Wins" in the Planner tab are dummy/mock tasks instead of calling Gemini to analyze the task's scope.
+- [ ] **AI Roadmap Planner (AI1)**: The AI Roadmap detail screen displays static boilerplate roadmaps instead of a structured plan tailored to the student's selected subject and due dates.
+
+---
+
+## Proposed Changes
+
+We will divide the execution into **4 core phases** to build out the missing flows, correct state behaviors, and integrate Gemini dynamic features:
+
+```mermaid
+graph TD
+    A[Phase 1: Complete Auth & Onboarding Flows] --> B[Phase 2: Mascot Companion & Cosmetics Layer]
+    B --> C[Phase 3: Interactive Focus Mode States]
+    C --> D[Phase 4: Gemini-Powered Dynamic Planning]
 ```
 
----
+### Phase 1: Complete Auth & Onboarding Flow
+Implement missing screens to secure auth flows and ensure onboarding handles state transitions correctly.
 
-## Architecture: Riverpod Layer
+#### [NEW] [forgot_password_screen.dart](file:///Users/madhurchouhan/macbook/flutter%20projects/neuroot/lib/features/auth/screens/forgot_password_screen.dart)
+Create forgot password interface connected to `AuthNotifier.sendPasswordReset` with inline success card states.
 
-```
-Firebase SDK
-    ↓
-Service Layer  (lib/core/services/)
-    ↓
-Repository Layer  (lib/features/*/repositories/)
-    ↓
-Riverpod Providers  (lib/features/*/providers/)
-    ↓
-Screens / Widgets
-```
+#### [NEW] [email_verification_screen.dart](file:///Users/madhurchouhan/macbook/flutter%20projects/neuroot/lib/features/auth/screens/email_verification_screen.dart)
+Design the email verification verification countdown state card.
 
-**Pattern:** `AsyncNotifierProvider` for async CRUD, `StreamProvider` for real-time Firestore listeners, `StateNotifierProvider` for local UI state (timer, form).
+#### [MODIFY] [app_router.dart](file:///Users/madhurchouhan/macbook/flutter%20projects/neuroot/lib/core/navigation/app_router.dart)
+Register `/forgot-password`, `/email-verification`, and add deep link routing configs.
 
 ---
 
-## Phase Plan
+### Phase 2: Mascot Companion & Cosmetics Layer
+Build the emotional center of the app by linking mood, streak, and achievements directly to Sprout's cosmetics.
+
+#### [MODIFY] [sprout_companion_card.dart](file:///Users/madhurchouhan/macbook/flutter%20projects/neuroot/lib/features/dashboard/widgets/sprout_companion_card.dart)
+Wired to dynamic expressions depending on current selected Mood and task completion counts.
+
+#### [MODIFY] [profile_screen.dart](file:///Users/madhurchouhan/macbook/flutter%20projects/neuroot/lib/features/profile/screens/profile_screen.dart)
+Allow equipping cosmetics like Scholar Hat, updating the global Sprout state engine which affects the dashboard header and cards.
 
 ---
 
-### Phase 1 — Foundation: Dependencies + Firebase Init + Data Models
+### Phase 3: Interactive Focus Mode States
+Update the timer screen to transition correctly between Work, Break, and Session Complete states with dynamic easing animations.
 
-**Goal:** Get Firebase wired in, Hive models codegen, shared auth state available.
-
-#### [MODIFY] `pubspec.yaml`
-Add: `google_sign_in`, `shared_preferences`, `flutter_secure_storage`, `fl_chart`, `hive_generator` (dev)
-
-#### [NEW] `lib/core/services/firebase_service.dart`
-Firebase.initializeApp() wrapper, called from `main.dart`.
-
-#### [NEW] `lib/core/models/` — all Hive + plain Dart models:
-- `user_model.dart` — UserModel (Firestore ↔ Dart)
-- `semester_model.dart`
-- `subject_model.dart`
-- `timetable_entry_model.dart`
-- `attendance_record_model.dart`
-- `task_model.dart`
-- `focus_session_model.dart`
-- `mood_log_model.dart`
-
-#### [MODIFY] `lib/main.dart`
-- Await `Firebase.initializeApp()`
-- Initialize Hive boxes
-- `ProviderScope` wraps app
+#### [MODIFY] [focus_screen.dart](file:///Users/madhurchouhan/macbook/flutter%20projects/neuroot/lib/features/focus/screens/focus_screen.dart)
+- Wire mode selector to prompt user via D3 dialog if session is running.
+- Design the F2 Break timer screen with warm-amber visual assets and custom break illustrations.
+- Create the F3 Session Complete celebratory overlay with XP increment highlights.
 
 ---
 
-### Phase 2 — Auth: Real Firebase Auth + Session Routing
+### Phase 4: Gemini-Powered Dynamic Planning
+Wire up the Gemini AI stack to feed real microtasks and interactive weekly plans into the student dashboard.
 
-**Goal:** Sign-in, sign-up, Google OAuth, sign-out all wire to Firebase. Router redirects based on auth state.
+#### [NEW] [gemini_service.dart](file:///Users/madhurchouhan/macbook/flutter%20projects/neuroot/lib/core/services/gemini_service.dart)
+Configure Gemini Flash model prompts to parse task titles/notes into structured JSON microtasks.
 
-#### [NEW] `lib/core/services/auth_service.dart`
-Methods: `signInWithEmail`, `signUpWithEmail`, `signInWithGoogle`, `signOut`, `sendPasswordReset`, `authStateChanges` stream.
-
-#### [NEW] `lib/features/auth/providers/auth_provider.dart`
-- `authStateProvider` — `StreamProvider<User?>` from `authService.authStateChanges`
-- `authNotifierProvider` — `AsyncNotifier` for sign-in/sign-up actions + error state
-
-#### [MODIFY] `lib/core/router/app_router.dart`
-Add `redirect` callback:
-- No user → `/landing`
-- User + `onboardingComplete == false` → `/onboarding`
-- User + `onboardingComplete == true` → `/home`
-Uses `ref.watch(authStateProvider)` via `refreshListenable`.
-
-#### [MODIFY] `lib/features/auth/screens/sign_in_screen.dart`
-- Wire sign-in button to `authNotifierProvider`
-- Wire Google button
-- Show loading state + error toasts per app-flow.md
-
-#### [MODIFY] `lib/features/auth/screens/sign_up_screen.dart`
-- Wire create-account to `authNotifierProvider`
-- Wire Google button
-- Email-exists error toast
-
-#### [MODIFY] `lib/features/auth/screens/splash_screen.dart`
-- Remove hardcoded `Timer` navigation
-- Watch `authStateProvider`, let router redirect handle it
-
----
-
-### Phase 3 — User Profile + Onboarding Persistence
-
-**Goal:** Onboarding writes real data to Firestore. `onboardingComplete` flag persists routing.
-
-#### [NEW] `lib/core/services/firestore_service.dart`
-Base service: typed `getDoc`, `setDoc`, `updateDoc`, `deleteDoc`, `collectionStream` helpers.
-
-#### [NEW] `lib/features/auth/providers/user_provider.dart`
-- `userDocProvider` — `StreamProvider` watching `users/{uid}`
-- `userNotifierProvider` — `AsyncNotifier` for profile update
-
-#### [MODIFY] `lib/features/onboarding/screens/onboarding_screen.dart`
-Wire the 3 steps to real Firestore writes:
-1. **WelcomeStep** — no data, just navigation
-2. **SemesterSetupStep** — writes semester doc + subjects sub-collection
-3. **MeetSproutStep** — sets `onboardingComplete: true` on user doc → router auto-redirects to `/home`
-
-#### [NEW] `lib/features/onboarding/providers/onboarding_provider.dart`
-`AsyncNotifier` handling:
-- `createSemester()`
-- `addSubjects()`
-- `completeOnboarding()`
-
----
-
-### Phase 4 — Attendance: Full CRUD + Real-Time %
-
-**Goal:** Mark/edit attendance, live percentage update, safe-leave calculator.
-
-#### [NEW] `lib/features/academic/repositories/attendance_repository.dart`
-- `markAttendance(subjectId, date, status)` — adds attendance record + updates subject counters atomically
-- `editAttendanceLog(recordId, status)` — updates record + recalculates counters
-- `getAttendanceStream(subjectId)` — real-time records stream
-- `getSubjectsStream()` — real-time subjects stream
-
-#### [NEW] `lib/features/academic/providers/attendance_provider.dart`
-- `subjectsStreamProvider` — `StreamProvider<List<SubjectModel>>`
-- `attendanceRecordsProvider(subjectId)` — `StreamProvider<List<AttendanceRecord>>`
-- `attendanceNotifierProvider` — `AsyncNotifier` for mark/edit actions
-- `safeLeavesProvider(subjectId)` — computed: how many classes can be missed
-
-#### [MODIFY] `lib/features/academic/screens/attendance_screen.dart`
-- Replace all mock data with `ref.watch(subjectsStreamProvider)`
-- `OverallAttendanceCard` shows real combined %
-- `AttendanceSubjectCard` shows per-subject real %
-- `AttendanceHeatmap` binds to real date-indexed records
-
-#### [NEW] `lib/features/academic/screens/subject_detail_screen.dart`
-- Subject detail with mark-attendance bottom sheet (BS4 from app-flow.md)
-- What-if calculator (slider → live % recalc, no network call)
-- Attendance log list with edit capability (BS5)
-
----
-
-### Phase 5 — Tasks & Planner: Full CRUD
-
-**Goal:** Add/edit/delete/complete tasks with real Firestore persistence.
-
-#### [NEW] `lib/features/planning/repositories/task_repository.dart`
-- `addTask(TaskModel)` 
-- `updateTask(taskId, updates)`
-- `deleteTask(taskId)`
-- `toggleComplete(taskId, bool)` — also awards XP if completed
-- `getTasksStream()` — real-time stream
-
-#### [NEW] `lib/features/planning/providers/task_provider.dart`
-- `tasksStreamProvider` — `StreamProvider<List<TaskModel>>`
-- `tasksByFilterProvider(filter)` — derived: all/assignments/exams/labs
-- `taskNotifierProvider` — `AsyncNotifier` for add/edit/delete
-
-#### [MODIFY] `lib/features/planning/screens/planner_screen.dart`
-- Replace mock tasks with `ref.watch(tasksStreamProvider)`
-- Wire filter tabs
-- Wire swipe-to-delete + complete actions
-- Show Add Task bottom sheet (BS1)
-
-#### [NEW] `lib/features/planning/widgets/add_task_bottom_sheet.dart`
-Full add-task form per app-flow.md BS1:
-- Title, subject chip selector, type, due date picker, priority
-
-#### [NEW] `lib/features/planning/screens/task_detail_screen.dart`
-- Edit inline fields
-- Subtask rows (toggle done)
-- Delete with confirm dialog D1
-- "Start Focus" button → navigates to focus with taskId
-
----
-
-### Phase 6 — Dashboard: Live Data
-
-**Goal:** Dashboard is no longer mocked. All sections show real user data.
-
-#### [NEW] `lib/features/dashboard/providers/dashboard_provider.dart`
-- `todayClassesProvider` — derived from timetable for today's weekday
-- `topTasksProvider` — top 3 incomplete tasks by priority + due date
-- `attendanceDangerProvider` — subjects below threshold
-- `userGreetingProvider` — user name + time-based greeting
-
-#### [MODIFY] `lib/features/dashboard/widgets/dashboard_header.dart`
-- Show real user `displayName` and `photoUrl` from `userDocProvider`
-
-#### [MODIFY] `lib/features/dashboard/screens/dashboard_screen.dart`
-- Replace all mock data with real providers
-- Today's classes from timetable
-- Top tasks wired to task completion actions
-- Attendance danger alert from `attendanceDangerProvider`
-- Mood selector writes to `moodLogs` collection
-
----
-
-### Phase 7 — Focus Mode: Session Persistence
-
-**Goal:** Focus timer sessions save to Firestore, XP is awarded, streak increments.
-
-#### [NEW] `lib/features/focus/providers/focus_provider.dart`
-- `focusTimerProvider` — `StateNotifierProvider` (timer state: running/paused/break/done, seconds remaining)
-- `focusSessionNotifierProvider` — `AsyncNotifier` saves session to Firestore on complete + awards XP
-
-#### [MODIFY] `lib/features/focus/screens/focus_screen.dart`
-- Wire timer controls (play/pause/restart/skip) to `focusTimerProvider`
-- On session complete → call `focusSessionNotifierProvider.saveSession()`
-- Show F3 session-complete overlay with real stats
-
----
-
-### Phase 8 — Profile + Insights: Real Data
-
-**Goal:** Profile shows real XP/level/streak. Insights shows real charts.
-
-#### [MODIFY] `lib/features/profile/screens/profile_screen.dart`
-- Watch `userDocProvider` for XP, level, streak
-- Progress bar = real XP / nextLevelXP
-- Milestones use real data
-
-#### [NEW] `lib/features/academic/providers/insights_provider.dart`
-- `weeklyFocusHoursProvider` — sum of focus sessions for selected week
-- `weeklyAttendanceProvider` — attendance % per subject for charts
-- `moodTrendProvider` — last 7 mood logs
-
-#### [MODIFY] `lib/features/academic/screens/insights_screen.dart`
-- Wire fl_chart bar chart to `weeklyFocusHoursProvider`
-- Wire pie/ring chart to `weeklyAttendanceProvider`
+#### [MODIFY] [un_overwhelm_me_view.dart](file:///Users/madhurchouhan/macbook/flutter%20projects/neuroot/lib/features/planning/widgets/un_overwhelm_me_view.dart)
+Consume live broken-down subtasks instead of hardcoded lists.
 
 ---
 
 ## Verification Plan
 
-### After Each Phase
-- `flutter run` with Firebase connected
-- Verify Firestore console shows written documents
-- Verify auth state changes redirect correctly
+### Automated Verification
+- Execute `flutter analyze` to check for types, imports, and syntax.
+- Verify code compilation and simulator run output.
 
-### End-to-End Flow
-1. Sign up with email → Firestore `users/{uid}` created
-2. Complete onboarding → semester + subjects written, `onboardingComplete: true`
-3. Mark attendance → subject counters update, % reflects real-time
-4. Add task → appears in planner + dashboard top tasks
-5. Run focus session → session doc written, XP incremented on user doc
-6. Check profile → XP bar reflects real value
-
----
-
-## File Creation Summary
-
-| Phase | New Files | Modified Files |
-|---|---|---|
-| 1 | 8 models, firebase_service.dart | pubspec.yaml, main.dart |
-| 2 | auth_service.dart, auth_provider.dart | splash, signin, signup, router |
-| 3 | firestore_service.dart, user_provider.dart, onboarding_provider.dart | onboarding_screen |
-| 4 | attendance_repository, attendance_provider, subject_detail_screen | attendance_screen |
-| 5 | task_repository, task_provider, add_task_bottom_sheet, task_detail_screen | planner_screen |
-| 6 | dashboard_provider | dashboard_screen, dashboard_header |
-| 7 | focus_provider | focus_screen |
-| 8 | insights_provider | profile_screen, insights_screen |
-
-**Total: ~20 new files, ~10 modified files**
+### Manual Verification
+- Walk through the auth flow: Sign up, complete email verification screen, test forgot password link.
+- Mark a task complete on the dashboard, check for Sprout XP and streak toast notifications.
+- Execute a 25-minute study session, verify transition to Break Mode, and verify the final Session Complete overlay.

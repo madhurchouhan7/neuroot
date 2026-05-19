@@ -7,6 +7,8 @@ import 'package:neuroot/features/dashboard/providers/dashboard_provider.dart';
 import 'package:neuroot/core/models/task_model.dart';
 import 'package:intl/intl.dart';
 
+import 'package:neuroot/features/planning/screens/task_detail_screen.dart';
+
 class ExamWeekBanner extends ConsumerWidget {
   const ExamWeekBanner({super.key});
 
@@ -42,8 +44,16 @@ class ExamWeekBanner extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        // navigate to planner or task detailed screen
-        context.push('/planner');
+        if (nextExam != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => TaskDetailScreen(task: nextExam),
+            ),
+          );
+        } else {
+          context.push('/planner');
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 20),

@@ -20,10 +20,7 @@ class InsightsScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFFFF9F1),
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: AppColors.amber),
-          onPressed: () {},
-        ),
+
         title: Text(
           'Insights',
           style: AppTypography.titleMedium(
@@ -97,7 +94,7 @@ class InsightsScreen extends StatelessWidget {
                     const Expanded(child: FocusStreaksWidget()),
                   ],
                 ),
-                
+
                 const SizedBox(height: 20),
                 const MoodTrendChart(),
 

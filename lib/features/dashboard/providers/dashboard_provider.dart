@@ -39,22 +39,38 @@ final todayClassesProvider = Provider<List<TimetableEntry>>((ref) {
   return todayEntries;
 });
 
+// ─── Time Ticker Provider ──────────────────────────────────────────────────────
+
+final timeTickerProvider = StreamProvider<DateTime>((ref) {
+  return (() async* {
+    yield DateTime.now();
+    yield* Stream.periodic(const Duration(seconds: 30), (_) => DateTime.now());
+  })();
+});
+
 // ─── User Greeting ────────────────────────────────────────────────────────────
 
 final userGreetingProvider = Provider<String>((ref) {
   final user = ref.watch(userDocProvider).asData?.value;
   final name = user?.displayName.split(' ').first ?? 'Student';
+  final now = ref.watch(timeTickerProvider).asData?.value ?? DateTime.now();
+  final hour = now.hour;
 
-  final hour = DateTime.now().hour;
   String greeting = 'Good evening';
   String emoji = '🌙';
 
-  if (hour >= 5 && hour < 12) {
+  if (hour >= 6 && hour < 12) {
     greeting = 'Good morning';
     emoji = '☀️';
-  } else if (hour >= 12 && hour < 17) {
+  } else if (hour >= 12 && hour < 18) {
     greeting = 'Good afternoon';
     emoji = '🌤️';
+  } else if (hour >= 18 && hour < 21) {
+    greeting = 'Good evening';
+    emoji = '🌙';
+  } else {
+    greeting = 'Good night';
+    emoji = '💤';
   }
 
   return '$greeting, $name $emoji';
@@ -64,13 +80,15 @@ final userGreetingProvider = Provider<String>((ref) {
 
 final isExamWeekProvider = Provider<bool>((ref) {
   final tasks = ref.watch(tasksStreamProvider).asData?.value ?? [];
-  final now = DateTime.now();
-  final thresholdDate = now.add(const Duration(days: 3));
+  final now = ref.watch(timeTickerProvider).asData?.value ?? DateTime.now();
+  final startOfToday = DateTime(now.year, now.month, now.day);
+  final thresholdDate = startOfToday.add(const Duration(days: 3, hours: 23, minutes: 59, seconds: 59));
 
   return tasks.any(
     (t) =>
         t.type == TaskType.exam &&
         !t.isCompleted &&
+        (t.dueDate.isAfter(startOfToday) || t.dueDate.isAtSameMomentAs(startOfToday)) &&
         t.dueDate.isBefore(thresholdDate),
   );
 });
@@ -114,6 +132,7 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
   final user = ref.watch(userDocProvider).asData?.value;
   final name = user?.displayName.split(' ').first ?? 'Student';
   final settings = ref.watch(settingsProvider);
+  final now = ref.watch(timeTickerProvider).asData?.value ?? DateTime.now();
 
   if (settings.themeMode == AppThemeMode.sakuraSpring) {
     return HomeThemeState(
@@ -140,7 +159,7 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
     );
   }
 
-  final hour = DateTime.now().hour;
+  final hour = now.hour;
 
   if (isExamWeek) {
     // Exam Week Mode (Purple theme)
@@ -157,7 +176,7 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
     );
   }
 
-  if (hour >= 5 && hour < 12) {
+  if (hour >= 6 && hour < 12) {
     // Morning (Warm Amber/Yellow morning glow)
     return HomeThemeState(
       gradientColors: [const Color(0xFFFFF2D4), const Color(0xFFFFFDF8)],
@@ -170,7 +189,7 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
       textColor: const Color(0xFF2B2B2B),
       accentColor: const Color(0xFFFFB703),
     );
-  } else if (hour >= 12 && hour < 17) {
+  } else if (hour >= 12 && hour < 18) {
     // Afternoon (Sage green fresh study gradient)
     return HomeThemeState(
       gradientColors: [const Color(0xFFE5EFE9), const Color(0xFFF8F5F0)],
@@ -182,8 +201,8 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
       textColor: const Color(0xFF2B2B2B),
       accentColor: const Color(0xFFA8D5BA),
     );
-  } else if (hour >= 17 && hour < 21) {
-    // Evening (Default PapayaWhip gradient)
+  } else if (hour >= 18 && hour < 21) {
+    // Evening (Warm Amber gradient)
     return HomeThemeState(
       gradientColors: [
         const Color(0xFFFFEFD5).withValues(alpha: 0.8),

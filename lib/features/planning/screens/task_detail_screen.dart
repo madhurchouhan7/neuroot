@@ -4,6 +4,7 @@ import 'package:neuroot/core/models/task_model.dart';
 import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/features/planning/providers/task_provider.dart';
+import 'package:intl/intl.dart';
 
 class TaskDetailScreen extends ConsumerStatefulWidget {
   final TaskModel task;
@@ -176,6 +177,177 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
 
   void _saveTopics() {
     ref.read(taskNotifierProvider.notifier).updateTopics(_task.id, _topics.map((t) => t.toMap()).toList());
+  }
+
+  void _editTaskDetails() async {
+    final titleCtrl = TextEditingController(text: _task.title);
+    final subjectCtrl = TextEditingController(text: _task.subjectId);
+    DateTime selectedDate = _task.dueDate;
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            title: Text('Edit Task Details', style: AppTypography.titleSmall(color: const Color(0xFF1B1C1C))),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('TITLE', style: AppTypography.labelSmall(color: const Color(0xFFB0A898))),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: titleCtrl,
+                    decoration: InputDecoration(
+                      hintText: 'e.g. Midterm Exam',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('SUBJECT ID', style: AppTypography.labelSmall(color: const Color(0xFFB0A898))),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: subjectCtrl,
+                    decoration: InputDecoration(
+                      hintText: 'e.g. CS301',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('DUE DATE', style: AppTypography.labelSmall(color: const Color(0xFFB0A898))),
+                  const SizedBox(height: 6),
+                  InkWell(
+                    onTap: () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                        lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+                      );
+                      if (date != null) {
+                        final time = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.fromDateTime(selectedDate),
+                        );
+                        if (time != null) {
+                          setDialogState(() {
+                            selectedDate = DateTime(
+                              date.year,
+                              date.month,
+                              date.day,
+                              time.hour,
+                              time.minute,
+                            );
+                          });
+                        }
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            DateFormat('EEE, MMM d @ h:mm a').format(selectedDate),
+                            style: AppTypography.bodyMedium(color: const Color(0xFF1B1C1C)),
+                          ),
+                          const Icon(Icons.calendar_today, size: 18, color: Color(0xFF8B8070)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text('Cancel', style: AppTypography.labelMedium(color: const Color(0xFF8B8070))),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size.zero,
+                  backgroundColor: AppColors.primaryContainer,
+                  foregroundColor: AppColors.textPrimary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                ),
+                onPressed: () {
+                  if (titleCtrl.text.trim().isEmpty) return;
+                  Navigator.pop(ctx, true);
+                },
+                child: Text('Save', style: AppTypography.buttonMedium(color: AppColors.textPrimary)),
+              ),
+            ],
+          );
+        }
+      ),
+    );
+
+    if (result == true) {
+      final updatedTitle = titleCtrl.text.trim();
+      final updatedSubject = subjectCtrl.text.trim();
+      
+      setState(() {
+        _task = _task.copyWith(
+          title: updatedTitle,
+          subjectId: updatedSubject,
+          dueDate: selectedDate,
+        );
+      });
+
+      ref.read(taskNotifierProvider.notifier).updateTask(_task.id, {
+        'title': updatedTitle,
+        'subjectId': updatedSubject,
+        'dueDate': selectedDate,
+      });
+    }
+  }
+
+  void _confirmDeleteTask() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text('Delete Task', style: AppTypography.titleSmall(color: const Color(0xFF1B1C1C))),
+        content: Text(
+          'Are you sure you want to delete this task? This action cannot be undone.',
+          style: AppTypography.bodyMedium(color: const Color(0xFF8B8070)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel', style: AppTypography.labelMedium(color: const Color(0xFF8B8070))),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              minimumSize: Size.zero,
+              backgroundColor: const Color(0xFFE05C5C),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Delete', style: AppTypography.buttonMedium(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      ref.read(taskNotifierProvider.notifier).deleteTask(_task.id);
+      Navigator.pop(context); // Pop detailed screen
+    }
   }
 
   @override
@@ -1754,9 +1926,39 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               style: AppTypography.labelMedium(color: textColor),
             ),
           ),
-          IconButton(
-            onPressed: () {},
+          PopupMenuButton<String>(
             icon: Icon(Icons.more_horiz, color: textColor),
+            color: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            onSelected: (value) {
+              if (value == 'edit') {
+                _editTaskDetails();
+              } else if (value == 'delete') {
+                _confirmDeleteTask();
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    const Icon(Icons.edit_outlined, color: Color(0xFF1B1C1C), size: 18),
+                    const SizedBox(width: 8),
+                    Text('Edit Details', style: AppTypography.bodyMedium(color: const Color(0xFF1B1C1C))),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    const Icon(Icons.delete_outline_rounded, color: Color(0xFFE05C5C), size: 18),
+                    const SizedBox(width: 8),
+                    Text('Delete Task', style: AppTypography.bodyMedium(color: const Color(0xFFE05C5C))),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

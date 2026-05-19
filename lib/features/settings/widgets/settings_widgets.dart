@@ -17,55 +17,132 @@ class SettingsProfileHeader extends ConsumerWidget {
     final initials = name.trim().split(' ').take(2).map((w) => w.isNotEmpty ? w[0] : '').join().toUpperCase();
     final photoUrl = user?.photoUrl ?? '';
 
+    final level = user?.level ?? 1;
+    final college = user?.college ?? '';
+    final collegeText = college.isNotEmpty ? college : 'VIT Pune · B.Tech CSE';
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFF0EBE3)),
-        boxShadow: AppColors.softShadow,
+        color: const Color(0xFF252525), // Premium dark carbon background
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           // Avatar
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.amber.withValues(alpha: 0.2),
-              border: Border.all(color: AppColors.amber.withValues(alpha: 0.4), width: 2),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: photoUrl.isNotEmpty
-                ? NeurootNetworkImage(url: photoUrl, height: 52, fit: BoxFit.cover)
-                : Center(
-                    child: Text(
-                      initials.isEmpty ? '🌱' : initials,
-                      style: AppTypography.titleSmall(color: AppColors.amber),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFDCB52), // Gold/Yellow square box
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: photoUrl.isNotEmpty
+                    ? NeurootNetworkImage(url: photoUrl, height: 72, width: 72, fit: BoxFit.cover)
+                    : Center(
+                        child: Text(
+                          initials.isEmpty ? '🌱' : initials,
+                          style: AppTypography.titleMedium(color: const Color(0xFF252525)).copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                          ),
+                        ),
+                      ),
+              ),
+              Positioned(
+                bottom: -4,
+                right: -4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF429F77), // Emerald Green level badge
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF252525), width: 2),
+                  ),
+                  child: Text(
+                    'Lv $level',
+                    style: AppTypography.labelSmall(color: Colors.white).copyWith(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(name, style: AppTypography.titleSmall(color: AppColors.textPrimary)),
+                Text(
+                  name,
+                  style: AppTypography.titleMedium(color: Colors.white).copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    height: 1.2,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 2),
-                Text(email, style: AppTypography.bodySmall(color: AppColors.textSecondary)),
+                Text(
+                  email,
+                  style: AppTypography.bodyMedium(color: Colors.white.withValues(alpha: 0.5)).copyWith(
+                    fontSize: 13,
+                    height: 1.2,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  collegeText,
+                  style: AppTypography.bodySmall(color: Colors.white.withValues(alpha: 0.35)).copyWith(
+                    fontSize: 12,
+                    height: 1.2,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
+          const SizedBox(width: 12),
           GestureDetector(
             onTap: () => context.push('/settings/edit_profile'),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8F5F0),
-                borderRadius: BorderRadius.circular(12),
+                color: Colors.white.withValues(alpha: 0.08), // Semi-transparent glass background
+                borderRadius: BorderRadius.circular(18),
               ),
-              child: Text('Edit ✏️', style: AppTypography.labelSmall(color: const Color(0xFF8B8070))),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Edit ',
+                    style: AppTypography.labelSmall(color: const Color(0xFFFDCB52)).copyWith(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Icon(
+                    Icons.edit_outlined,
+                    color: Color(0xFFFDCB52),
+                    size: 13,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
