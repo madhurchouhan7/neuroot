@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:neuroot/features/auth/providers/auth_provider.dart';
 import 'package:neuroot/features/auth/providers/user_provider.dart';
+import 'package:neuroot/features/academic/providers/attendance_provider.dart';
+import 'package:neuroot/features/academic/providers/insights_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -283,22 +285,42 @@ class ProfileScreen extends ConsumerWidget {
                     progress: ((user?.streak ?? 0) / 7.0).clamp(0.0, 1.0),
                   ),
                   const SizedBox(height: 12),
-                  _buildMilestone(
-                    icon: '📚',
-                    title: '10h Study Week',
-                    subtitle: '8.2 / 10 hrs',
-                    isCompleted: false,
-                    progress: 0.82,
-                  ),
+                  
+                  // 10h Study Week Calculation
+                  () {
+                    final weeklyFocusHours = ref.watch(weeklyFocusHoursProvider);
+                    final totalWeeklyHours = weeklyFocusHours.fold<double>(0.0, (sum, val) => sum + val);
+                    final isStudyGoalCompleted = totalWeeklyHours >= 10.0;
+                    return _buildMilestone(
+                      icon: '📚',
+                      title: '10h Study Week',
+                      subtitle: isStudyGoalCompleted
+                          ? 'Completed!'
+                          : '${totalWeeklyHours.toStringAsFixed(1)} / 10 hrs',
+                      isCompleted: isStudyGoalCompleted,
+                      progress: (totalWeeklyHours / 10.0).clamp(0.0, 1.0),
+                    );
+                  }(),
                   const SizedBox(height: 12),
-                  _buildMilestone(
-                    icon: '🌸',
-                    title: 'Full Attendance',
-                    subtitle: 'Keep going!',
-                    isCompleted: false,
-                    progress: 0.3,
-                    isDisabled: true,
-                  ),
+                  
+                  // 75% Attendance Goal Calculation
+                  () {
+                    final overallAttendance = ref.watch(overallAttendanceProvider);
+                    final attendancePercentage = overallAttendance ?? 0.0;
+                    final isAttendanceGoalCompleted = attendancePercentage >= 75.0;
+                    return _buildMilestone(
+                      icon: '🌸',
+                      title: '75% Attendance Goal',
+                      subtitle: isAttendanceGoalCompleted
+                          ? 'Completed! (${attendancePercentage.toStringAsFixed(1)}%)'
+                          : (overallAttendance == null
+                              ? 'No classes marked'
+                              : '${attendancePercentage.toStringAsFixed(1)}% / 75%'),
+                      isCompleted: isAttendanceGoalCompleted,
+                      progress: (attendancePercentage / 75.0).clamp(0.0, 1.0),
+                      isDisabled: overallAttendance == null,
+                    );
+                  }(),
 
                   const SizedBox(height: 40),
 

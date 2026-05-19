@@ -9,6 +9,7 @@ import 'package:neuroot/features/academic/widgets/attendance_subject_card.dart';
 import 'package:neuroot/features/academic/widgets/overall_attendance_card.dart';
 import 'package:neuroot/features/academic/widgets/attendance_heatmap.dart';
 import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
+import 'package:neuroot/features/settings/providers/settings_provider.dart';
 
 class AttendanceScreen extends ConsumerWidget {
   const AttendanceScreen({super.key});
@@ -18,6 +19,8 @@ class AttendanceScreen extends ConsumerWidget {
     final subjectsAsync = ref.watch(subjectsStreamProvider);
     final overallPct = ref.watch(overallAttendanceProvider);
     final actionState = ref.watch(attendanceNotifierProvider);
+    final settings = ref.watch(settingsProvider);
+    final threshold = settings.attendanceThreshold;
 
     // Show success/error snackbar
     ref.listen<AttendanceActionState>(attendanceNotifierProvider, (prev, next) {
@@ -115,18 +118,20 @@ class AttendanceScreen extends ConsumerWidget {
                     loading: () => const _LoadingCard(),
                     error: (e, _) => _ErrorCard(message: e.toString()),
                     data: (subjects) {
+                      final hasData = overallPct != null;
                       final pct = overallPct ?? 0;
-                      final safeLeaves = subjects.isEmpty
+                      // Safe leaves = average across subjects that have classes
+                      final activeSubjects = subjects.where((s) => s.totalClasses > 0).toList();
+                      final safeLeaves = activeSubjects.isEmpty
                           ? 0
-                          : subjects
-                                .map(
-                                  (s) =>
-                                      AttendanceRepository.computeSafeLeaves(s),
-                                )
-                                .fold(0, (a, b) => a + (b > 0 ? b : 0));
+                          : activeSubjects
+                                .map((s) => AttendanceRepository.computeSafeLeaves(s, threshold: threshold))
+                                .fold(0, (a, b) => a + b);
                       return OverallAttendanceCard(
                         percentage: pct,
                         safeLeaves: safeLeaves,
+                        threshold: threshold,
+                        hasData: hasData,
                       );
                     },
                   ),
@@ -178,24 +183,30 @@ class AttendanceScreen extends ConsumerWidget {
                         );
                       }
 
-                      // Sort: danger first, then warning, then safe
+                      // Sort by attendance % ascending (danger first)
                       final sorted = [...subjects]
                         ..sort((a, b) {
-                          return a.attendancePercentage.compareTo(
-                            b.attendancePercentage,
-                          );
+                          // Subjects with 0 classes go to the bottom
+                          if (a.totalClasses == 0 && b.totalClasses == 0) return 0;
+                          if (a.totalClasses == 0) return 1;
+                          if (b.totalClasses == 0) return -1;
+                          return a.attendancePercentage.compareTo(b.attendancePercentage);
                         });
 
                       return Column(
                         children: sorted.map((subject) {
-                          final pct = subject.attendancePercentage;
-                          final safeLeaves =
-                              AttendanceRepository.computeSafeLeaves(subject);
-                          final risk = pct >= 80
-                              ? AttendanceRisk.safe
-                              : pct >= 75
-                              ? AttendanceRisk.warning
-                              : AttendanceRisk.danger;
+                          final hasClasses = subject.totalClasses > 0;
+                          final pct = hasClasses ? subject.attendancePercentage : 0.0;
+                          final safeLeaves = hasClasses
+                              ? AttendanceRepository.computeSafeLeaves(subject, threshold: threshold)
+                              : 0;
+                          final risk = !hasClasses
+                              ? AttendanceRisk.safe  // show neutral for untouched subjects
+                              : pct >= threshold
+                                  ? AttendanceRisk.safe
+                                  : pct >= (threshold - 3)
+                                      ? AttendanceRisk.warning
+                                      : AttendanceRisk.danger;
                           final dotColor = _colorFromHex(subject.color);
 
                           return AttendanceSubjectCard(
@@ -205,7 +216,7 @@ class AttendanceScreen extends ConsumerWidget {
                             dotColor: dotColor,
                             iconBgColor: dotColor.withValues(alpha: 0.15),
                             riskLevel: risk,
-                            leavesLeft: safeLeaves.abs(),
+                            leavesLeft: hasClasses ? safeLeaves.abs() : 0,
                             onTap: () {
                               Navigator.push(
                                 context,

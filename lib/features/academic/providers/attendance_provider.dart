@@ -28,6 +28,14 @@ final attendanceRecordsProvider =
   return repo.getAttendanceStream(subjectId);
 });
 
+/// Real-time stream of all attendance records for the current month (for heatmap).
+final monthAttendanceProvider = StreamProvider<List<AttendanceRecord>>((ref) {
+  final repo = ref.watch(attendanceRepositoryProvider);
+  final now = DateTime.now();
+  return repo.getMonthAttendanceStream(now.year, now.month);
+});
+
+
 // ─── Overall Attendance ───────────────────────────────────────────────────────
 
 /// Derived: combined attendance % across ALL subjects.

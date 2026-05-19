@@ -6,6 +6,8 @@ import 'package:neuroot/features/auth/providers/user_provider.dart';
 
 enum FocusPhase { idle, focusing, breakTime, completed }
 
+enum AmbientSound { none, rain, forest, fire }
+
 class FocusState {
   final FocusPhase phase;
   final int totalSeconds;
@@ -13,6 +15,9 @@ class FocusState {
   final int completedSessions;
   final int targetSessions;
   final String? taskName;
+  final bool isDeepFocus;
+  final AmbientSound ambientSound;
+  final bool isPaused;
 
   const FocusState({
     this.phase = FocusPhase.idle,
@@ -21,6 +26,9 @@ class FocusState {
     this.completedSessions = 0,
     this.targetSessions = 4,
     this.taskName,
+    this.isDeepFocus = false,
+    this.ambientSound = AmbientSound.none,
+    this.isPaused = false,
   });
 
   int get remainingSeconds => totalSeconds - elapsedSeconds;
@@ -36,6 +44,7 @@ class FocusState {
   FocusState copyWith({
     FocusPhase? phase, int? totalSeconds, int? elapsedSeconds,
     int? completedSessions, int? targetSessions, String? taskName,
+    bool? isDeepFocus, AmbientSound? ambientSound, bool? isPaused,
   }) => FocusState(
     phase: phase ?? this.phase,
     totalSeconds: totalSeconds ?? this.totalSeconds,
@@ -43,6 +52,9 @@ class FocusState {
     completedSessions: completedSessions ?? this.completedSessions,
     targetSessions: targetSessions ?? this.targetSessions,
     taskName: taskName ?? this.taskName,
+    isDeepFocus: isDeepFocus ?? this.isDeepFocus,
+    ambientSound: ambientSound ?? this.ambientSound,
+    isPaused: isPaused ?? this.isPaused,
   );
 }
 
@@ -53,6 +65,20 @@ class FocusNotifier extends Notifier<FocusState> {
   @override
   FocusState build() => const FocusState();
 
+  void toggleDeepFocus() {
+    state = state.copyWith(isDeepFocus: !state.isDeepFocus);
+  }
+
+  void setAmbientSound(AmbientSound sound) {
+    state = state.copyWith(ambientSound: sound);
+    // TODO: Integrate just_audio here to play sound based on selection
+    if (sound != AmbientSound.none) {
+      print('Playing $sound sound...');
+    } else {
+      print('Stopping ambient sound.');
+    }
+  }
+
   void startFocus({String? taskName}) {
     _timer?.cancel();
     state = FocusState(
@@ -62,6 +88,9 @@ class FocusNotifier extends Notifier<FocusState> {
       completedSessions: state.completedSessions,
       targetSessions: state.targetSessions,
       taskName: taskName ?? state.taskName,
+      isDeepFocus: state.isDeepFocus,
+      ambientSound: state.ambientSound,
+      isPaused: false,
     );
     _tick();
   }
@@ -72,17 +101,28 @@ class FocusNotifier extends Notifier<FocusState> {
       phase: FocusPhase.breakTime,
       totalSeconds: isLong ? 15 * 60 : 5 * 60,
       elapsedSeconds: 0,
+      isPaused: false,
     );
     _tick();
   }
 
-  void pause() => _timer?.cancel();
+  void pause() {
+    _timer?.cancel();
+    state = state.copyWith(isPaused: true);
+  }
 
-  void resume() => _tick();
+  void resume() {
+    state = state.copyWith(isPaused: false);
+    _tick();
+  }
 
   void reset() {
     _timer?.cancel();
-    state = const FocusState();
+    state = state.copyWith(
+      phase: FocusPhase.idle,
+      elapsedSeconds: 0,
+      isPaused: false,
+    );
   }
 
   void _tick() {

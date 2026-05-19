@@ -226,9 +226,20 @@ class TimetableManagerCard extends ConsumerStatefulWidget {
 }
 
 class _TimetableManagerCardState extends ConsumerState<TimetableManagerCard> {
-  int _selectedDayIndex = 0;
+  late int _selectedDayIndex;
 
   String get _selectedDay => _days[_selectedDayIndex];
+
+  @override
+  void initState() {
+    super.initState();
+    final currentWeekday = DateTime.now().weekday; // 1 = Monday, 7 = Sunday
+    if (currentWeekday >= 1 && currentWeekday <= 6) {
+      _selectedDayIndex = currentWeekday - 1;
+    } else {
+      _selectedDayIndex = 0; // Default to Monday if Sunday
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -14,13 +14,15 @@ import 'package:neuroot/features/settings/providers/settings_provider.dart';
 final timetableStreamProvider = StreamProvider<List<TimetableEntry>>((ref) {
   final uid = FirebaseAuth.instance.currentUser?.uid;
   if (uid == null) return Stream.value([]);
-  
+
   return FirebaseFirestore.instance
       .collection('users/$uid/timetable')
       .snapshots()
-      .map((snapshot) => snapshot.docs
-          .map((doc) => TimetableEntry.fromFirestore(doc))
-          .toList());
+      .map(
+        (snapshot) => snapshot.docs
+            .map((doc) => TimetableEntry.fromFirestore(doc))
+            .toList(),
+      );
 });
 
 // ─── Today's Classes ──────────────────────────────────────────────────────────
@@ -28,12 +30,12 @@ final timetableStreamProvider = StreamProvider<List<TimetableEntry>>((ref) {
 final todayClassesProvider = Provider<List<TimetableEntry>>((ref) {
   final entries = ref.watch(timetableStreamProvider).asData?.value ?? [];
   final today = DateTime.now().weekday - 1; // 0 = Monday
-  
+
   final todayEntries = entries.where((e) => e.dayOfWeek == today).toList();
-  
+
   // Sort by start time (assuming "HH:MM" format)
   todayEntries.sort((a, b) => a.startTime.compareTo(b.startTime));
-  
+
   return todayEntries;
 });
 
@@ -42,11 +44,11 @@ final todayClassesProvider = Provider<List<TimetableEntry>>((ref) {
 final userGreetingProvider = Provider<String>((ref) {
   final user = ref.watch(userDocProvider).asData?.value;
   final name = user?.displayName.split(' ').first ?? 'Student';
-  
+
   final hour = DateTime.now().hour;
   String greeting = 'Good evening';
   String emoji = '🌙';
-  
+
   if (hour >= 5 && hour < 12) {
     greeting = 'Good morning';
     emoji = '☀️';
@@ -54,8 +56,8 @@ final userGreetingProvider = Provider<String>((ref) {
     greeting = 'Good afternoon';
     emoji = '🌤️';
   }
-  
-  return '$greeting,\n$name $emoji';
+
+  return '$greeting, $name $emoji';
 });
 
 // ─── Exam Week Mode ────────────────────────────────────────────────────────────
@@ -64,17 +66,20 @@ final isExamWeekProvider = Provider<bool>((ref) {
   final tasks = ref.watch(tasksStreamProvider).asData?.value ?? [];
   final now = DateTime.now();
   final thresholdDate = now.add(const Duration(days: 3));
-  
-  return tasks.any((t) =>
-      t.type == TaskType.exam &&
-      !t.isCompleted &&
-      t.dueDate.isBefore(thresholdDate));
+
+  return tasks.any(
+    (t) =>
+        t.type == TaskType.exam &&
+        !t.isCompleted &&
+        t.dueDate.isBefore(thresholdDate),
+  );
 });
 
 final nextUpcomingExamProvider = Provider<TaskModel?>((ref) {
   final tasks = ref.watch(tasksStreamProvider).asData?.value ?? [];
-  final exams = tasks.where((t) => t.type == TaskType.exam && !t.isCompleted).toList()
-    ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+  final exams =
+      tasks.where((t) => t.type == TaskType.exam && !t.isCompleted).toList()
+        ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
   return exams.isEmpty ? null : exams.first;
 });
 
@@ -109,13 +114,13 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
   final user = ref.watch(userDocProvider).asData?.value;
   final name = user?.displayName.split(' ').first ?? 'Student';
   final settings = ref.watch(settingsProvider);
-  
+
   if (settings.themeMode == AppThemeMode.sakuraSpring) {
     return HomeThemeState(
       gradientColors: [const Color(0xFFFFE4E1), const Color(0xFFFFF0F5)],
       sproutEmoji: '🌸🌱',
       sproutStatusText: 'Enjoying the spring breeze. Let\'s bloom today!',
-      greetingText: 'Happy Spring,\n$name 🌸',
+      greetingText: 'Happy Spring, $name 🌸',
       backgroundColor: const Color(0xFFFFF0F5),
       cardColor: const Color(0xFFFFFFFF),
       textColor: const Color(0xFF8B1A1A),
@@ -126,7 +131,7 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
       gradientColors: [const Color(0xFF2B2121), const Color(0xFF1F1A1A)],
       sproutEmoji: '🕰️🌱',
       sproutStatusText: 'The library is quiet. A perfect time for deep work.',
-      greetingText: 'Good morrow,\n$name ☕',
+      greetingText: 'Good morrow, $name ☕',
       backgroundColor: const Color(0xFF1F1A1A),
       cardColor: const Color(0xFF2C2424),
       textColor: const Color(0xFFD4C4A8),
@@ -134,36 +139,32 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
       isDark: true,
     );
   }
-  
+
   final hour = DateTime.now().hour;
-  
+
   if (isExamWeek) {
     // Exam Week Mode (Purple theme)
     return HomeThemeState(
-      gradientColors: [
-        const Color(0xFFECE2FA),
-        const Color(0xFFFFFDF8),
-      ],
+      gradientColors: [const Color(0xFFECE2FA), const Color(0xFFFFFDF8)],
       sproutEmoji: '🤓🌱',
-      sproutStatusText: 'Exam week is close! Let\'s tackle one small topic at a time.',
-      greetingText: 'Stay focused,\n$name 🔥',
+      sproutStatusText:
+          'Exam week is close! Let\'s tackle one small topic at a time.',
+      greetingText: 'Stay focused, $name 🔥',
       backgroundColor: const Color(0xFFFBF9FF),
       cardColor: const Color(0xFFFFFDF8),
       textColor: const Color(0xFF4A346E),
       accentColor: const Color(0xFF9F7AEA), // Purple Accent
     );
   }
-  
+
   if (hour >= 5 && hour < 12) {
     // Morning (Warm Amber/Yellow morning glow)
     return HomeThemeState(
-      gradientColors: [
-        const Color(0xFFFFF2D4),
-        const Color(0xFFFFFDF8),
-      ],
+      gradientColors: [const Color(0xFFFFF2D4), const Color(0xFFFFFDF8)],
       sproutEmoji: '☕🌱',
-      sproutStatusText: 'Morning! Ready to start the day with a gentle focus session?',
-      greetingText: 'Good morning,\n$name ☀️',
+      sproutStatusText:
+          'Morning! Ready to start the day with a gentle focus session?',
+      greetingText: 'Good morning, $name ☀️',
       backgroundColor: const Color(0xFFF8F5F0),
       cardColor: const Color(0xFFFFFDF8),
       textColor: const Color(0xFF2B2B2B),
@@ -172,13 +173,10 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
   } else if (hour >= 12 && hour < 17) {
     // Afternoon (Sage green fresh study gradient)
     return HomeThemeState(
-      gradientColors: [
-        const Color(0xFFE5EFE9),
-        const Color(0xFFF8F5F0),
-      ],
+      gradientColors: [const Color(0xFFE5EFE9), const Color(0xFFF8F5F0)],
       sproutEmoji: '📚🌱',
       sproutStatusText: 'Doing great! Let\'s keep steady and consistent.',
-      greetingText: 'Good afternoon,\n$name 🌤️',
+      greetingText: 'Good afternoon, $name 🌤️',
       backgroundColor: const Color(0xFFF8F5F0),
       cardColor: const Color(0xFFFFFDF8),
       textColor: const Color(0xFF2B2B2B),
@@ -192,8 +190,9 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
         const Color(0xFFFFF9F1).withValues(alpha: 0.0),
       ],
       sproutEmoji: '🍵🌱',
-      sproutStatusText: 'Evening check-in! Wind down or do a light study review.',
-      greetingText: 'Good evening,\n$name 🌙',
+      sproutStatusText:
+          'Evening check-in! Wind down or do a light study review.',
+      greetingText: 'Good evening, $name 🌙',
       backgroundColor: const Color(0xFFF8F5F0),
       cardColor: const Color(0xFFFFFDF8),
       textColor: const Color(0xFF2B2B2B),
@@ -202,13 +201,11 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
   } else {
     // Night (Starry night cozy dark mode!)
     return HomeThemeState(
-      gradientColors: [
-        const Color(0xFF1A1A2E),
-        const Color(0xFF161616),
-      ],
+      gradientColors: [const Color(0xFF1A1A2E), const Color(0xFF161616)],
       sproutEmoji: '😴🌱',
-      sproutStatusText: 'You\'ve worked hard. Time to rest your mind and sleep.',
-      greetingText: 'Good night,\n$name 💤',
+      sproutStatusText:
+          'You\'ve worked hard. Time to rest your mind and sleep.',
+      greetingText: 'Good night, $name 💤',
       backgroundColor: const Color(0xFF161616),
       cardColor: const Color(0xFF222222),
       textColor: const Color(0xFFECEAE5),
@@ -233,17 +230,19 @@ class TodayMoodNotifier extends Notifier<MoodType?> {
 
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
-    
+
     try {
       final snap = await FirebaseFirestore.instance
-        .collection('users/$uid/moodLogs')
-        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
-        .orderBy('date', descending: true)
-        .limit(1)
-        .get();
-        
+          .collection('users/$uid/moodLogs')
+          .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+          .orderBy('date', descending: true)
+          .limit(1)
+          .get();
+
       if (snap.docs.isNotEmpty) {
-        state = MoodTypeExtension.fromString(snap.docs.first.data()['mood'] as String);
+        state = MoodTypeExtension.fromString(
+          snap.docs.first.data()['mood'] as String,
+        );
       }
     } catch (_) {}
   }
@@ -251,9 +250,9 @@ class TodayMoodNotifier extends Notifier<MoodType?> {
   Future<void> setMood(MoodType mood) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-    
+
     state = mood;
-    
+
     try {
       await FirebaseFirestore.instance.collection('users/$uid/moodLogs').add({
         'date': FieldValue.serverTimestamp(),
@@ -264,5 +263,6 @@ class TodayMoodNotifier extends Notifier<MoodType?> {
   }
 }
 
-final todayMoodProvider = NotifierProvider<TodayMoodNotifier, MoodType?>(TodayMoodNotifier.new);
-
+final todayMoodProvider = NotifierProvider<TodayMoodNotifier, MoodType?>(
+  TodayMoodNotifier.new,
+);

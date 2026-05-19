@@ -3,15 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../../features/planning/screens/planner_screen.dart';
 import '../../features/focus/screens/focus_screen.dart';
+import '../../features/focus/providers/focus_provider.dart';
 import '../../features/academic/screens/insights_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
+import '../../features/auth/providers/auth_provider.dart';
+
 // ─── Shell Nav Index Provider ────────────────────────────────────────────────
 class ShellNavIndexNotifier extends Notifier<int> {
   @override
-  int build() => 0;
+  int build() {
+    // Reset index to 0 (Dashboard) on auth changes (logout/login)
+    ref.listen(authStateProvider, (prev, next) {
+      state = 0;
+    });
+    return 0;
+  }
   void setIndex(int index) => state = index;
 }
 
@@ -35,16 +44,23 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final index = ref.watch(shellNavIndexProvider);
 
+    final focus = ref.watch(focusProvider);
+    final isFocusing = focus.phase != FocusPhase.idle;
+
     return Scaffold(
       backgroundColor: AppColors.warmCream,
       body: IndexedStack(index: index, children: _screens),
-      bottomNavigationBar: _NeurootBottomNav(
-        currentIndex: index,
-        onTap: (i) => ref.read(shellNavIndexProvider.notifier).setIndex(i),
-      ),
+      bottomNavigationBar: isFocusing
+          ? null
+          : _NeurootBottomNav(
+              currentIndex: index,
+              onTap: (i) => ref.read(shellNavIndexProvider.notifier).setIndex(i),
+            ),
     );
   }
 }
+
+
 
 // ─── Custom Bottom Nav ────────────────────────────────────────────────────────
 class _NeurootBottomNav extends StatelessWidget {

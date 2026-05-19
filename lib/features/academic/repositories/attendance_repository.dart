@@ -27,11 +27,30 @@ class AttendanceRepository {
     return _fs
         .collection('users/$_uid/attendance')
         .where('subjectId', isEqualTo: subjectId)
-        .orderBy('date', descending: true)
+        .snapshots()
+        .map((snap) {
+          final records = snap.docs
+              .map((d) => AttendanceRecord.fromFirestore(d))
+              .toList();
+          // Sort in memory — avoids requiring a composite Firestore index
+          records.sort((a, b) => b.date.compareTo(a.date));
+          return records;
+        });
+  }
+
+  /// Real-time stream of ALL attendance records for heatmap (current month).
+  Stream<List<AttendanceRecord>> getMonthAttendanceStream(int year, int month) {
+    final start = DateTime(year, month, 1);
+    final end = DateTime(year, month + 1, 1);
+    return _fs
+        .collection('users/$_uid/attendance')
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('date', isLessThan: Timestamp.fromDate(end))
         .snapshots()
         .map((snap) =>
             snap.docs.map((d) => AttendanceRecord.fromFirestore(d)).toList());
   }
+
 
   // ─── Mark Attendance ─────────────────────────────────────────────────────
 

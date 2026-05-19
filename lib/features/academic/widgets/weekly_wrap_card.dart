@@ -88,7 +88,7 @@ class WeeklyWrapCard extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _buildStat('Focus', '${totalFocusHours.toStringAsFixed(1)}h', AppColors.primaryContainer),
-                  _buildStat('Attend', '${(totalPercent * 100).toInt()}%', const Color(0xFFC5EDC4)), // secondary-container
+                  _buildStat('Attend', '${totalPercent.toInt()}%', const Color(0xFFC5EDC4)), // secondary-container
                   _buildStat('Tasks', '$completedTasks', const Color(0xFFD5C6FF)), // tertiary-container
                 ],
               ),

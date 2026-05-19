@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
@@ -9,12 +10,26 @@ import '../providers/focus_provider.dart';
 import '../../../shared/widgets/bounce_button.dart';
 import '../../../shared/widgets/ambient_motion.dart';
 
-class FocusScreen extends ConsumerWidget {
+class FocusScreen extends ConsumerStatefulWidget {
   const FocusScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FocusScreen> createState() => _FocusScreenState();
+}
+
+class _FocusScreenState extends ConsumerState<FocusScreen> {
+  @override
+  Widget build(BuildContext context) {
     final focus = ref.watch(focusProvider);
+
+    // Enter immersive mode if focusing, exit if idle
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (focus.phase != FocusPhase.idle) {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      } else {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      }
+    });
 
     return Scaffold(
       backgroundColor: focus.phase == FocusPhase.idle
@@ -112,6 +127,15 @@ class _IdleState extends StatelessWidget {
                     color: const Color(0xFF6B6560),
                   ),
                 ),
+                const SizedBox(height: 32),
+
+                // Ambient Sound Selector
+                _AmbientSoundSelector(focus: focus, ref: ref),
+                const SizedBox(height: 16),
+
+                // Deep Focus Toggle
+                _DeepFocusToggle(focus: focus, ref: ref),
+
                 const Spacer(),
                 GlowPulseWidget(
                   glowColor: AppColors.primaryContainer,
@@ -358,8 +382,14 @@ class _ActiveState extends StatelessWidget {
                     ),
                     const SizedBox(width: 24),
                     _buildControlButton(
-                      Icons.pause,
-                      () => ref.read(focusProvider.notifier).pause(),
+                      focus.isPaused ? Icons.play_arrow : Icons.pause,
+                      () {
+                        if (focus.isPaused) {
+                          ref.read(focusProvider.notifier).resume();
+                        } else {
+                          ref.read(focusProvider.notifier).pause();
+                        }
+                      },
                       true,
                     ),
                     const SizedBox(width: 24),
@@ -640,3 +670,169 @@ class _CompletedState extends StatelessWidget {
     );
   }
 }
+
+// ─── Toggles & Selectors ──────────────────────────────────────────────────
+
+class _DeepFocusToggle extends StatelessWidget {
+  final FocusState focus;
+  final WidgetRef ref;
+
+  const _DeepFocusToggle({required this.focus, required this.ref});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C1A16),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF38342F)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(
+                focus.isDeepFocus ? Icons.do_not_disturb_on : Icons.do_not_disturb_off,
+                color: focus.isDeepFocus ? const Color(0xFFFF8A65) : const Color(0xFF6B6560),
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Deep Focus Mode',
+                    style: AppTypography.titleMedium(color: AppColors.white).copyWith(fontSize: 14),
+                  ),
+                  Text(
+                    'Keeps screen on & mutes alerts',
+                    style: AppTypography.labelSmall(color: const Color(0xFF6B6560)).copyWith(fontSize: 10),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          Switch(
+            value: focus.isDeepFocus,
+            activeColor: const Color(0xFFFF8A65),
+            activeTrackColor: const Color(0xFFFF8A65).withValues(alpha: 0.2),
+            inactiveThumbColor: const Color(0xFF6B6560),
+            inactiveTrackColor: const Color(0xFF272420),
+            onChanged: (val) {
+              ref.read(focusProvider.notifier).toggleDeepFocus();
+              if (val) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Deep Focus ON: Please put your phone on silent mode! 🤫'),
+                    backgroundColor: const Color(0xFFFF8A65),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AmbientSoundSelector extends StatelessWidget {
+  final FocusState focus;
+  final WidgetRef ref;
+
+  const _AmbientSoundSelector({required this.focus, required this.ref});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'AMBIENT SOUND',
+          style: AppTypography.labelSmall(color: const Color(0xFF6B6560))
+              .copyWith(letterSpacing: 1.5, fontSize: 11),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _SoundOption(
+              icon: Icons.volume_off_rounded,
+              label: 'None',
+              isSelected: focus.ambientSound == AmbientSound.none,
+              onTap: () => ref.read(focusProvider.notifier).setAmbientSound(AmbientSound.none),
+            ),
+            _SoundOption(
+              icon: Icons.water_drop_rounded,
+              label: 'Rain',
+              isSelected: focus.ambientSound == AmbientSound.rain,
+              onTap: () => ref.read(focusProvider.notifier).setAmbientSound(AmbientSound.rain),
+            ),
+            _SoundOption(
+              icon: Icons.forest_rounded,
+              label: 'Forest',
+              isSelected: focus.ambientSound == AmbientSound.forest,
+              onTap: () => ref.read(focusProvider.notifier).setAmbientSound(AmbientSound.forest),
+            ),
+            _SoundOption(
+              icon: Icons.local_fire_department_rounded,
+              label: 'Fire',
+              isSelected: focus.ambientSound == AmbientSound.fire,
+              onTap: () => ref.read(focusProvider.notifier).setAmbientSound(AmbientSound.fire),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _SoundOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _SoundOption({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSelected ? AppColors.primaryContainer : const Color(0xFF6B6560);
+    final bgColor = isSelected ? AppColors.primaryContainer.withValues(alpha: 0.1) : const Color(0xFF1C1A16);
+    
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 72,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryContainer.withValues(alpha: 0.3) : const Color(0xFF38342F),
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: AppTypography.labelSmall(color: color).copyWith(fontSize: 10),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
