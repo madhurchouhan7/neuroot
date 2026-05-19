@@ -8,6 +8,9 @@ import 'package:neuroot/features/auth/providers/auth_provider.dart';
 import 'package:neuroot/features/auth/providers/user_provider.dart';
 import 'package:neuroot/features/academic/providers/attendance_provider.dart';
 import 'package:neuroot/features/academic/providers/insights_provider.dart';
+import 'package:neuroot/features/planning/providers/task_provider.dart';
+import 'package:neuroot/core/models/attendance_record_model.dart';
+import 'package:neuroot/features/settings/providers/settings_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -16,6 +19,7 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userState = ref.watch(userDocProvider);
     final user = userState.asData?.value;
+    final settings = ref.watch(settingsProvider);
 
     Future<void> handleSignOut() async {
       final confirm = await showDialog<bool>(
@@ -69,6 +73,66 @@ class ProfileScreen extends ConsumerWidget {
     final currentLevelXP = xp % 500;
     final xpProgress = currentLevelXP / 500.0;
 
+    final tasksList = ref.watch(tasksStreamProvider).asData?.value ?? [];
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59);
+
+    final completedToday = tasksList.where((t) {
+      if (!t.isCompleted || t.completedAt == null) return false;
+      return t.completedAt!.isAfter(todayStart) &&
+          t.completedAt!.isBefore(todayEnd);
+    }).length;
+
+    final monthRecords = ref.watch(monthAttendanceProvider).asData?.value ?? [];
+    final todayAttendance = monthRecords.where((r) {
+      return r.date.isAfter(todayStart) && r.date.isBefore(todayEnd);
+    }).toList();
+
+    final classesAttendedToday = todayAttendance
+        .where((r) => r.status == AttendanceStatus.present)
+        .length;
+    final totalClassesToday = todayAttendance.length;
+
+    // Generate dynamic message & companion state
+    String bubbleMessage;
+    String statusBadge;
+
+    if (!settings.sproutAIEnabled) {
+      bubbleMessage = '"Sprout\'s AI Coach is turned off. You need to turn it ON from Settings! 🤖🌱"';
+      statusBadge = 'AI Coach Offline 📴';
+    } else if (completedToday > 0 &&
+        totalClassesToday > 0 &&
+        classesAttendedToday == totalClassesToday) {
+      bubbleMessage =
+          '"You completed $completedToday task${completedToday == 1 ? "" : "s"} and attended all $totalClassesToday class${totalClassesToday == 1 ? "" : "es"} today! 🌟 Small progress still counts — I\'m proud of you."';
+      statusBadge = 'Blooming & Active 🌟';
+    } else if (completedToday > 0 && totalClassesToday == 0) {
+      bubbleMessage =
+          '"You completed $completedToday task${completedToday == 1 ? "" : "s"} today! 🌱 You\'re building amazing habits. Sprout is cheering you on!"';
+      statusBadge = 'Blooming & Active 🌟';
+    } else if (completedToday > 0 && classesAttendedToday < totalClassesToday) {
+      bubbleMessage =
+          '"You completed $completedToday task${completedToday == 1 ? "" : "s"} and made it to $classesAttendedToday/$totalClassesToday of your classes today. 🌸 Rest is part of the journey — let\'s grow step-by-step."';
+      statusBadge = 'Blooming & Active 🌟';
+    } else if (completedToday == 0 &&
+        totalClassesToday > 0 &&
+        classesAttendedToday == totalClassesToday) {
+      bubbleMessage =
+          '"You attended all $totalClassesToday class${totalClassesToday == 1 ? "" : "es"} today! 🎓 Showing up is half the battle. You did great today!"';
+      statusBadge = 'Blooming & Active 🌟';
+    } else if (completedToday == 0 &&
+        totalClassesToday > 0 &&
+        classesAttendedToday < totalClassesToday) {
+      bubbleMessage =
+          '"You made it to $classesAttendedToday/$totalClassesToday class${totalClassesToday == 1 ? "" : "es"} today. 🌼 Every day is a fresh page. Let\'s rest and try again tomorrow!"';
+      statusBadge = 'Blooming & Active 🌟';
+    } else {
+      bubbleMessage =
+          '"Hey there! Sprout is ready to grow with you today. 🌱 Try breaking down your tasks or checking in on your classes whenever you\'re ready!"';
+      statusBadge = 'Dreaming & Growing 🌱';
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFF9F1), // bloom-cream
       appBar: AppBar(
@@ -85,7 +149,10 @@ class ProfileScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_rounded, color: AppColors.textSecondary),
+            icon: const Icon(
+              Icons.settings_rounded,
+              color: AppColors.textSecondary,
+            ),
             tooltip: 'Settings',
             onPressed: () => context.push('/settings'),
           ),
@@ -184,7 +251,7 @@ class ProfileScreen extends ConsumerWidget {
                             ],
                           ),
                           child: Text(
-                            'Happy & Growing ✨',
+                            statusBadge,
                             style: AppTypography.labelSmall(
                               color: const Color(0xFF1B1C1C),
                             ),
@@ -223,7 +290,7 @@ class ProfileScreen extends ConsumerWidget {
                           ],
                         ),
                         child: Text(
-                          '"You completed 3 tasks and attended all classes today! 🌟 Small progress still counts — I\'m proud of you."',
+                          bubbleMessage,
                           textAlign: TextAlign.center,
                           style: AppTypography.bodyMedium(
                             color: const Color(0xFF1B1C1C),
@@ -285,11 +352,16 @@ class ProfileScreen extends ConsumerWidget {
                     progress: ((user?.streak ?? 0) / 7.0).clamp(0.0, 1.0),
                   ),
                   const SizedBox(height: 12),
-                  
+
                   // 10h Study Week Calculation
                   () {
-                    final weeklyFocusHours = ref.watch(weeklyFocusHoursProvider);
-                    final totalWeeklyHours = weeklyFocusHours.fold<double>(0.0, (sum, val) => sum + val);
+                    final weeklyFocusHours = ref.watch(
+                      weeklyFocusHoursProvider,
+                    );
+                    final totalWeeklyHours = weeklyFocusHours.fold<double>(
+                      0.0,
+                      (sum, val) => sum + val,
+                    );
                     final isStudyGoalCompleted = totalWeeklyHours >= 10.0;
                     return _buildMilestone(
                       icon: '📚',
@@ -302,20 +374,23 @@ class ProfileScreen extends ConsumerWidget {
                     );
                   }(),
                   const SizedBox(height: 12),
-                  
+
                   // 75% Attendance Goal Calculation
                   () {
-                    final overallAttendance = ref.watch(overallAttendanceProvider);
+                    final overallAttendance = ref.watch(
+                      overallAttendanceProvider,
+                    );
                     final attendancePercentage = overallAttendance ?? 0.0;
-                    final isAttendanceGoalCompleted = attendancePercentage >= 75.0;
+                    final isAttendanceGoalCompleted =
+                        attendancePercentage >= 75.0;
                     return _buildMilestone(
                       icon: '🌸',
                       title: '75% Attendance Goal',
                       subtitle: isAttendanceGoalCompleted
                           ? 'Completed! (${attendancePercentage.toStringAsFixed(1)}%)'
                           : (overallAttendance == null
-                              ? 'No classes marked'
-                              : '${attendancePercentage.toStringAsFixed(1)}% / 75%'),
+                                ? 'No classes marked'
+                                : '${attendancePercentage.toStringAsFixed(1)}% / 75%'),
                       isCompleted: isAttendanceGoalCompleted,
                       progress: (attendancePercentage / 75.0).clamp(0.0, 1.0),
                       isDisabled: overallAttendance == null,
@@ -323,31 +398,6 @@ class ProfileScreen extends ConsumerWidget {
                   }(),
 
                   const SizedBox(height: 40),
-
-                  // Sign Out Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: handleSignOut,
-                      icon: const Icon(Icons.logout, color: Colors.redAccent),
-                      label: Text(
-                        'Sign Out',
-                        style: AppTypography.bodyMedium(
-                          color: Colors.redAccent,
-                        ).copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: Color(0xFFF5EFE3)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        backgroundColor: AppColors.white,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 100),
                 ],
               ),
             ),

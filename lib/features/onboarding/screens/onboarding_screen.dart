@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/features/onboarding/providers/onboarding_provider.dart';
+import 'package:neuroot/shared/widgets/neuroot_confetti.dart';
 
 import '../widgets/welcome_step.dart';
 import '../widgets/semester_setup_step.dart';
@@ -61,6 +62,61 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
+  Future<void> _showSkipConfirmationDialog() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFF9F7F1), // Warm cream
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: const Row(
+            children: [
+              Text('⚠️ ', style: TextStyle(fontSize: 22)),
+              Text(
+                'Skip Setup?',
+                style: TextStyle(
+                  color: Color(0xFF4A4A4A),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            "Skipping setup means Sprout won't have your class schedule or semester boundaries to automatically track your attendance, calculate study wins, or tailor milestones.\n\nYou can set this up later in Settings, but doing it now unlocks Sprout's companion powers! Skip anyway? 🌱",
+            style: TextStyle(color: Color(0xFF5A5A5A), height: 1.4),
+          ),
+          actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text(
+                'Go Back',
+                style: TextStyle(color: AppColors.sageDark, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFECEC), // Warm warning light-red
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text(
+                'Skip Setup',
+                style: TextStyle(color: Color(0xFFE05C5C), fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true && mounted) {
+      await ref.read(onboardingProvider.notifier).completeOnboarding();
+      if (mounted) context.go('/home');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,15 +129,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               _buildTopBar(),
 
             Expanded(
-              child: PageView(
-                controller: _pageCtrl,
-                physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (i) => setState(() => _currentPage = i),
+              child: Stack(
                 children: [
-                  WelcomeStep(onNext: _next),
-                  SemesterSetupStep(onNext: _next),
-                  TimetableBuilderStep(onNext: _next),
-                  MeetSproutStep(onNext: _next),
+                  PageView(
+                    controller: _pageCtrl,
+                    physics: const NeverScrollableScrollPhysics(),
+                    onPageChanged: (i) => setState(() => _currentPage = i),
+                    children: [
+                      WelcomeStep(onNext: _next),
+                      SemesterSetupStep(onNext: _next),
+                      TimetableBuilderStep(onNext: _next),
+                      MeetSproutStep(onNext: _next),
+                    ],
+                  ),
+                  if (_currentPage == 3)
+                    const IgnorePointer(
+                      child: NeurootConfetti(),
+                    ),
                 ],
               ),
             ),
@@ -140,12 +204,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
           // Skip → marks onboarding complete
           GestureDetector(
-            onTap: () async {
-              await ref
-                  .read(onboardingProvider.notifier)
-                  .completeOnboarding();
-              if (mounted) context.go('/home');
-            },
+            onTap: _showSkipConfirmationDialog,
             child: const Text(
               'Skip',
               style: TextStyle(

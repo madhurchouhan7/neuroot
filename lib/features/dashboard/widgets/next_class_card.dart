@@ -6,12 +6,70 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:neuroot/features/dashboard/providers/dashboard_provider.dart';
 import 'package:neuroot/features/academic/providers/attendance_provider.dart';
 import 'package:neuroot/core/models/timetable_entry_model.dart';
+import 'package:neuroot/features/settings/providers/settings_provider.dart';
 
 class NextClassCard extends ConsumerWidget {
   const NextClassCard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
+    if (!settings.dynamicTimetableEnabled) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: Text(
+              'NEXT CLASS',
+              style: AppTypography.labelSmall(color: const Color(0xFF7F7662))
+                  .copyWith(letterSpacing: 0.08, fontWeight: FontWeight.bold),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Dynamic Timetable is turned off. You need to turn it ON from Settings! 📅🌱',
+                    style: AppTypography.bodyMedium(color: AppColors.white),
+                  ),
+                  backgroundColor: const Color(0xFFFF8A65),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              );
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2B2B2B),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFF3E3B36)),
+              ),
+              alignment: Alignment.center,
+              child: Column(
+                children: [
+                  const Icon(Icons.calendar_today_rounded, color: Color(0xFFFFB703), size: 28),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Dynamic timetable is turned off.",
+                    style: AppTypography.bodyMedium(color: AppColors.white).copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "You need to turn it ON from Settings",
+                    style: AppTypography.bodySmall(color: const Color(0xFF8B8070)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     final classes = ref.watch(todayClassesProvider);
     final subjects = ref.watch(subjectsStreamProvider).asData?.value ?? [];
 

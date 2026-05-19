@@ -4,6 +4,7 @@ import 'package:neuroot/core/models/attendance_record_model.dart';
 import 'package:neuroot/core/models/subject_model.dart';
 import 'package:neuroot/features/academic/repositories/attendance_repository.dart';
 import 'package:neuroot/features/auth/providers/user_provider.dart';
+import 'package:neuroot/features/settings/providers/settings_provider.dart';
 
 // ─── Repository Provider ──────────────────────────────────────────────────────
 
@@ -24,9 +25,9 @@ final subjectsStreamProvider = StreamProvider<List<SubjectModel>>((ref) {
 /// Real-time stream of attendance records for a given [subjectId].
 final attendanceRecordsProvider =
     StreamProvider.family<List<AttendanceRecord>, String>((ref, subjectId) {
-  final repo = ref.watch(attendanceRepositoryProvider);
-  return repo.getAttendanceStream(subjectId);
-});
+      final repo = ref.watch(attendanceRepositoryProvider);
+      return repo.getAttendanceStream(subjectId);
+    });
 
 /// Real-time stream of all attendance records for the current month (for heatmap).
 final monthAttendanceProvider = StreamProvider<List<AttendanceRecord>>((ref) {
@@ -34,7 +35,6 @@ final monthAttendanceProvider = StreamProvider<List<AttendanceRecord>>((ref) {
   final now = DateTime.now();
   return repo.getMonthAttendanceStream(now.year, now.month);
 });
-
 
 // ─── Overall Attendance ───────────────────────────────────────────────────────
 
@@ -57,16 +57,18 @@ final overallAttendanceProvider = Provider<double?>((ref) {
 
 /// Derived: safe leaves remaining for a specific subject.
 final safeLeavesProvider = Provider.family<int, SubjectModel>((ref, subject) {
-  return AttendanceRepository.computeSafeLeaves(subject, threshold: 75);
+  final threshold = ref.watch(settingsProvider).attendanceThreshold;
+  return AttendanceRepository.computeSafeLeaves(subject, threshold: threshold);
 });
 
 // ─── Danger Subjects ──────────────────────────────────────────────────────────
 
-/// Subjects with attendance % below 75.
+/// Subjects with attendance % below threshold.
 final dangerSubjectsProvider = Provider<List<SubjectModel>>((ref) {
+  final threshold = ref.watch(settingsProvider).attendanceThreshold;
   final subjects = ref.watch(subjectsStreamProvider).asData?.value ?? [];
   return subjects
-      .where((s) => s.totalClasses > 0 && s.attendancePercentage < 75)
+      .where((s) => s.totalClasses > 0 && s.attendancePercentage < threshold)
       .toList();
 });
 
@@ -88,13 +90,13 @@ class AttendanceActionState {
     String? errorMessage,
     String? successMessage,
     bool clearMessages = false,
-  }) =>
-      AttendanceActionState(
-        isLoading: isLoading ?? this.isLoading,
-        errorMessage: clearMessages ? null : errorMessage ?? this.errorMessage,
-        successMessage:
-            clearMessages ? null : successMessage ?? this.successMessage,
-      );
+  }) => AttendanceActionState(
+    isLoading: isLoading ?? this.isLoading,
+    errorMessage: clearMessages ? null : errorMessage ?? this.errorMessage,
+    successMessage: clearMessages
+        ? null
+        : successMessage ?? this.successMessage,
+  );
 }
 
 // ─── Attendance Notifier ──────────────────────────────────────────────────────
@@ -113,7 +115,10 @@ class AttendanceNotifier extends Notifier<AttendanceActionState> {
     state = state.copyWith(isLoading: true, clearMessages: true);
     try {
       await _repo.markAttendance(
-          subjectId: subjectId, date: date, status: status);
+        subjectId: subjectId,
+        date: date,
+        status: status,
+      );
       final emoji = status == AttendanceStatus.present
           ? '✅'
           : (status == AttendanceStatus.absent ? '😔' : '📌');
@@ -166,12 +171,17 @@ class AttendanceNotifier extends Notifier<AttendanceActionState> {
           .where('isActive', isEqualTo: true)
           .limit(1)
           .get();
-      final semId =
-          semSnap.docs.isNotEmpty ? semSnap.docs.first.id : 'default';
+      final semId = semSnap.docs.isNotEmpty ? semSnap.docs.first.id : 'default';
       await _repo.addSubject(
-          name: name, code: code, color: color, semesterId: semId);
+        name: name,
+        code: code,
+        color: color,
+        semesterId: semId,
+      );
       state = state.copyWith(
-          isLoading: false, successMessage: '🌱 Subject added!');
+        isLoading: false,
+        successMessage: '🌱 Subject added!',
+      );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -198,4 +208,5 @@ class AttendanceNotifier extends Notifier<AttendanceActionState> {
 
 final attendanceNotifierProvider =
     NotifierProvider<AttendanceNotifier, AttendanceActionState>(
-        AttendanceNotifier.new);
+      AttendanceNotifier.new,
+    );

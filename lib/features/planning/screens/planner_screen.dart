@@ -22,6 +22,7 @@ class PlannerScreen extends ConsumerStatefulWidget {
 
 class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   int _activeTab = 0;
+  List<String>? _customOrderIds;
 
   @override
   Widget build(BuildContext context) {
@@ -160,40 +161,44 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
               const SliverToBoxAdapter(child: ExamCountdownCard()),
               const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
-              tasksAsync.when(
-                loading: () => const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(40),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primaryContainer,
-                      ),
-                    ),
-                  ),
-                ),
-                error: (e, stack) {
-                  debugPrint('[PlannerScreen] Error loading tasks: $e\n$stack');
-                  return SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFECEC),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        "Couldn't load tasks: ${e.toString().split('\n').first}",
-                        style: AppTypography.bodyMedium(
-                          color: const Color(0xFFE05C5C),
+              ...tasksAsync.when<List<Widget>>(
+                loading: () => [
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(40),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primaryContainer,
                         ),
                       ),
                     ),
                   ),
-                );
+                ],
+                error: (e, stack) {
+                  debugPrint('[PlannerScreen] Error loading tasks: $e\n$stack');
+                  return [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFECEC),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Text(
+                            "Couldn't load tasks: ${e.toString().split('\n').first}",
+                            style: AppTypography.bodyMedium(
+                              color: const Color(0xFFE05C5C),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ];
                 },
                 data: (allTasks) {
                   final tasks = _applyFilter(allTasks, filter);
@@ -203,52 +208,97 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   final completed = tasks.where((t) => t.isCompleted).toList();
 
                   if (tasks.isEmpty) {
-                    return SliverToBoxAdapter(
-                      child: _EmptyTasksView(
-                        onAdd: () => _openAddTask(context),
+                    return [
+                      SliverToBoxAdapter(
+                        child: _EmptyTasksView(
+                          onAdd: () => _openAddTask(context),
+                        ),
                       ),
-                    );
+                    ];
                   }
 
-                  final grouped = _groupByDate(incomplete);
+                  // Sync and sort local custom order
+                  if (_customOrderIds == null) {
+                    _customOrderIds = incomplete.map((t) => t.id).toList();
+                  } else {
+                    // Sync: add new items, remove deleted ones
+                    final currentIds = incomplete.map((t) => t.id).toSet();
+                    _customOrderIds!.removeWhere(
+                      (id) => !currentIds.contains(id),
+                    );
+                    final orderedSet = _customOrderIds!.toSet();
+                    for (final t in incomplete) {
+                      if (!orderedSet.contains(t.id)) {
+                        _customOrderIds!.add(t.id);
+                      }
+                    }
+                  }
 
-                  return SliverList(
-                    delegate: SliverChildListDelegate([
-                      // Grouped incomplete tasks
-                      ...grouped.entries.expand(
-                        (entry) => [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 4,
-                            ),
-                            child: Text(
-                              entry.key,
-                              style: AppTypography.labelSmall(
-                                color: _dateHeaderColor(entry.key),
-                              ),
+                  // Sort incomplete tasks according to _customOrderIds
+                  incomplete.sort((a, b) {
+                    final indexA = _customOrderIds!.indexOf(a.id);
+                    final indexB = _customOrderIds!.indexOf(b.id);
+                    return indexA.compareTo(indexB);
+                  });
+
+                  return [
+                    // Incomplete Header
+                    if (incomplete.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 8,
+                          ),
+                          child: Text(
+                            'TO DO · DRAG TO REORDER 📋',
+                            style: AppTypography.labelSmall(
+                              color: const Color(0xFF8B8070),
                             ),
                           ),
-                          ...entry.value.map(
-                            (task) => _LiveTaskCard(
+                        ),
+                      ),
+
+                    // Incomplete List (Reorderable)
+                    if (incomplete.isNotEmpty)
+                      SliverReorderableList(
+                        itemCount: incomplete.length,
+                        itemBuilder: (context, index) {
+                          final task = incomplete[index];
+                          return ReorderableDelayedDragStartListener(
+                            key: ValueKey(task.id),
+                            index: index,
+                            child: _LiveTaskCard(
                               task: task,
                               onComplete: (done) => ref
                                   .read(taskNotifierProvider.notifier)
                                   .toggleComplete(task.id, isCompleted: done),
                               onDelete: () =>
                                   _confirmDelete(context, ref, task.id),
+                              key: ValueKey(task.id),
                             ),
-                          ),
-                        ],
+                          );
+                        },
+                        onReorder: (oldIndex, newIndex) {
+                          setState(() {
+                            if (newIndex > oldIndex) newIndex -= 1;
+                            final item = incomplete.removeAt(oldIndex);
+                            incomplete.insert(newIndex, item);
+                            _customOrderIds = incomplete
+                                .map((t) => t.id)
+                                .toList();
+                          });
+                        },
                       ),
 
-                      // Completed section
-                      if (completed.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        Padding(
+                    // Completed Section
+                    if (completed.isNotEmpty) ...[
+                      const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                      SliverToBoxAdapter(
+                        child: Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20,
-                            vertical: 4,
+                            vertical: 8,
                           ),
                           child: Text(
                             'DONE ✅',
@@ -257,19 +307,23 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                             ),
                           ),
                         ),
-                        ...completed.map(
-                          (task) => _LiveTaskCard(
+                      ),
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final task = completed[index];
+                          return _LiveTaskCard(
+                            key: ValueKey(task.id),
                             task: task,
                             onComplete: (done) => ref
                                 .read(taskNotifierProvider.notifier)
                                 .toggleComplete(task.id, isCompleted: done),
                             onDelete: () =>
                                 _confirmDelete(context, ref, task.id),
-                          ),
-                        ),
-                      ],
-                    ]),
-                  );
+                          );
+                        }, childCount: completed.length),
+                      ),
+                    ],
+                  ];
                 },
               ),
             ] else ...[
@@ -465,6 +519,7 @@ class _LiveTaskCard extends StatefulWidget {
     required this.task,
     required this.onComplete,
     required this.onDelete,
+    required ValueKey<String> key,
   });
 
   final TaskModel task;
@@ -484,8 +539,33 @@ class _LiveTaskCardState extends State<_LiveTaskCard> {
 
     return Dismissible(
       key: ValueKey(task.id),
-      direction: DismissDirection.endToStart,
+      direction: DismissDirection.horizontal,
       background: Container(
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 20),
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEBF5EB),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              task.isCompleted ? Icons.undo : Icons.check_circle_outline,
+              color: AppColors.sageDark,
+              size: 24,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              task.isCompleted ? 'Mark Active' : 'Complete',
+              style: AppTypography.labelSmall(
+                color: AppColors.sageDark,
+              ).copyWith(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+      secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
@@ -493,14 +573,32 @@ class _LiveTaskCardState extends State<_LiveTaskCard> {
           color: const Color(0xFFFFECEC),
           borderRadius: BorderRadius.circular(20),
         ),
-        child: const Icon(
-          Icons.delete_outline,
-          color: Color(0xFFE05C5C),
-          size: 24,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'Delete',
+              style: AppTypography.labelSmall(
+                color: const Color(0xFFE05C5C),
+              ).copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.delete_outline,
+              color: Color(0xFFE05C5C),
+              size: 24,
+            ),
+          ],
         ),
       ),
-      confirmDismiss: (_) async {
-        widget.onDelete();
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.startToEnd) {
+          widget.onComplete(!task.isCompleted);
+          return false;
+        } else if (direction == DismissDirection.endToStart) {
+          widget.onDelete();
+          return false;
+        }
         return false;
       },
       child: GestureDetector(

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/features/dashboard/providers/dashboard_provider.dart';
-import 'package:neuroot/core/models/task_model.dart';
 import 'package:intl/intl.dart';
 
 import 'package:neuroot/features/planning/screens/task_detail_screen.dart';
@@ -47,9 +45,7 @@ class ExamWeekBanner extends ConsumerWidget {
         if (nextExam != null) {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => TaskDetailScreen(task: nextExam),
-            ),
+            MaterialPageRoute(builder: (_) => TaskDetailScreen(task: nextExam)),
           );
         } else {
           context.push('/planner');

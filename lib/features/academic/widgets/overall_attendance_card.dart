@@ -24,18 +24,18 @@ class OverallAttendanceCard extends StatelessWidget {
     final Color statusColor = isSafe
         ? AppColors.sageDark
         : isWarning
-            ? AppColors.amber
-            : const Color(0xFFE05C5C);
+        ? AppColors.amber
+        : const Color(0xFFE05C5C);
     final Color statusBg = isSafe
         ? AppColors.sageDark.withValues(alpha: 0.2)
         : isWarning
-            ? AppColors.amber.withValues(alpha: 0.2)
-            : const Color(0xFFE05C5C).withValues(alpha: 0.2);
+        ? AppColors.amber.withValues(alpha: 0.2)
+        : const Color(0xFFE05C5C).withValues(alpha: 0.2);
     final String statusLabel = isSafe
         ? 'Safe Zone ✅'
         : isWarning
-            ? 'Warning Zone ⚠️'
-            : 'Danger Zone 🚨';
+        ? 'Warning Zone ⚠️'
+        : 'Danger Zone 🚨';
 
     final String safeLeavesText;
     if (!hasData) {
@@ -47,7 +47,8 @@ class OverallAttendanceCard extends StatelessWidget {
       safeLeavesText = 'Attend every class to stay safe 🌱';
     } else {
       final need = safeLeaves.abs();
-      safeLeavesText = 'Attend $need more class${need == 1 ? '' : 'es'} to recover';
+      safeLeavesText =
+          'Attend $need more class${need == 1 ? '' : 'es'} to recover';
     }
 
     return Container(
@@ -84,74 +85,103 @@ class OverallAttendanceCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    hasData ? '${percentage.toStringAsFixed(1)}%' : '--.--% ',
-                    style: AppTypography.titleXL(color: AppColors.white)
-                        .copyWith(fontSize: 52, height: 1, letterSpacing: -1),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Overall Attendance',
-                    style: AppTypography.bodySmall(color: const Color(0xFF8B8070))
-                        .copyWith(fontSize: 12, fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: hasData ? statusBg : Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      hasData ? '${percentage.toStringAsFixed(1)}%' : '--.--% ',
+                      style: AppTypography.titleXL(
+                        color: AppColors.white,
+                      ).copyWith(fontSize: 52, height: 1, letterSpacing: -1),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '●',
-                          style: TextStyle(
-                            fontSize: 8,
-                            color: hasData ? statusColor : const Color(0xFF8B8070),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Overall Attendance',
+                      style: AppTypography.bodySmall(
+                        color: const Color(0xFF8B8070),
+                      ).copyWith(fontSize: 12, fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: hasData
+                            ? statusBg
+                            : Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '●',
+                            style: TextStyle(
+                              fontSize: 8,
+                              color: hasData
+                                  ? statusColor
+                                  : const Color(0xFF8B8070),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          hasData ? statusLabel : 'No data yet',
-                          style: AppTypography.labelSmall(
-                            color: hasData ? statusColor : const Color(0xFF8B8070),
-                          ).copyWith(fontSize: 11),
-                        ),
-                      ],
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              hasData ? statusLabel : 'No data yet',
+                              style: AppTypography.labelSmall(
+                                color: hasData
+                                    ? statusColor
+                                    : const Color(0xFF8B8070),
+                              ).copyWith(fontSize: 11),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    safeLeavesText,
-                    style: AppTypography.bodySmall(color: const Color(0xFFD1C5AE))
-                        .copyWith(fontWeight: FontWeight.w500),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      safeLeavesText,
+                      style: AppTypography.bodySmall(
+                        color: const Color(0xFFD1C5AE),
+                      ).copyWith(fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 16),
               // Threshold Ring
               Column(
                 children: [
                   SizedBox(
-                    width: 72,
-                    height: 72,
+                    width: 80,
+                    height: 80,
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        CircularProgressIndicator(
-                          value: hasData ? (percentage / 100).clamp(0.0, 1.0) : 0,
-                          strokeWidth: 8,
-                          backgroundColor: Colors.white.withValues(alpha: 0.1),
-                          color: hasData ? statusColor : const Color(0xFF8B8070),
+                        SizedBox(
+                          width: 80,
+                          height: 80,
+                          child: CircularProgressIndicator(
+                            value: hasData
+                                ? (percentage / 100).clamp(0.0, 1.0)
+                                : 0,
+                            strokeWidth: 8,
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.1,
+                            ),
+                            color: hasData
+                                ? statusColor
+                                : const Color(0xFF8B8070),
+                          ),
                         ),
                         Text(
                           '$threshold%',
-                          style: AppTypography.titleMedium(color: AppColors.white)
-                              .copyWith(fontSize: 20),
+                          style: AppTypography.titleMedium(
+                            color: AppColors.white,
+                          ).copyWith(fontSize: 22, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -159,8 +189,9 @@ class OverallAttendanceCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     'THRESHOLD',
-                    style: AppTypography.labelSmall(color: const Color(0xFF8B8070))
-                        .copyWith(fontSize: 11, letterSpacing: 1),
+                    style: AppTypography.labelSmall(
+                      color: const Color(0xFF8B8070),
+                    ).copyWith(fontSize: 11, letterSpacing: 1),
                   ),
                 ],
               ),

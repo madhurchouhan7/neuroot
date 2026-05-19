@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/features/academic/providers/attendance_provider.dart';
@@ -11,6 +12,8 @@ import 'package:neuroot/features/academic/widgets/attendance_heatmap.dart';
 import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
 import 'package:neuroot/features/settings/providers/settings_provider.dart';
 
+final sortByRiskProvider = StateProvider<bool>((ref) => false);
+
 class AttendanceScreen extends ConsumerWidget {
   const AttendanceScreen({super.key});
 
@@ -21,6 +24,7 @@ class AttendanceScreen extends ConsumerWidget {
     final actionState = ref.watch(attendanceNotifierProvider);
     final settings = ref.watch(settingsProvider);
     final threshold = settings.attendanceThreshold;
+    final sortByRisk = ref.watch(sortByRiskProvider);
 
     // Show success/error snackbar
     ref.listen<AttendanceActionState>(attendanceNotifierProvider, (prev, next) {
@@ -121,11 +125,18 @@ class AttendanceScreen extends ConsumerWidget {
                       final hasData = overallPct != null;
                       final pct = overallPct ?? 0;
                       // Safe leaves = average across subjects that have classes
-                      final activeSubjects = subjects.where((s) => s.totalClasses > 0).toList();
+                      final activeSubjects = subjects
+                          .where((s) => s.totalClasses > 0)
+                          .toList();
                       final safeLeaves = activeSubjects.isEmpty
                           ? 0
                           : activeSubjects
-                                .map((s) => AttendanceRepository.computeSafeLeaves(s, threshold: threshold))
+                                .map(
+                                  (s) => AttendanceRepository.computeSafeLeaves(
+                                    s,
+                                    threshold: threshold,
+                                  ),
+                                )
                                 .fold(0, (a, b) => a + b);
                       return OverallAttendanceCard(
                         percentage: pct,
@@ -141,7 +152,7 @@ class AttendanceScreen extends ConsumerWidget {
                   // ── Subjects Header ─────────────────────────────────────
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         'SUBJECTS',
@@ -150,22 +161,53 @@ class AttendanceScreen extends ConsumerWidget {
                         ).copyWith(letterSpacing: 1, fontSize: 11),
                       ),
                       GestureDetector(
-                        onTap: () {}, // TODO: sort toggle
-                        child: Row(
-                          children: [
-                            Text(
-                              'Sort by risk',
-                              style: AppTypography.labelSmall(
-                                color: AppColors.primaryContainer,
+                        onTap: () =>
+                            ref.read(sortByRiskProvider.notifier).state =
+                                !sortByRisk,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: sortByRisk
+                                ? const Color(0xFFFFECEC)
+                                : const Color(
+                                    0xFFE8E0D4,
+                                  ).withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: sortByRisk
+                                  ? const Color(
+                                      0xFFE05C5C,
+                                    ).withValues(alpha: 0.3)
+                                  : Colors.transparent,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Sort by risk',
+                                style: AppTypography.labelSmall(
+                                  color: sortByRisk
+                                      ? const Color(0xFFE05C5C)
+                                      : const Color(0xFF4E4634),
+                                ).copyWith(fontWeight: FontWeight.bold),
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Icons.arrow_downward,
-                              size: 14,
-                              color: AppColors.primaryContainer,
-                            ),
-                          ],
+                              const SizedBox(width: 4),
+                              Icon(
+                                sortByRisk
+                                    ? Icons.warning_amber_rounded
+                                    : Icons.swap_vert,
+                                size: 14,
+                                color: sortByRisk
+                                    ? const Color(0xFFE05C5C)
+                                    : const Color(0xFF4E4634),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -183,30 +225,48 @@ class AttendanceScreen extends ConsumerWidget {
                         );
                       }
 
-                      // Sort by attendance % ascending (danger first)
-                      final sorted = [...subjects]
-                        ..sort((a, b) {
+                      final sorted = [...subjects];
+                      if (sortByRisk) {
+                        // Sort by attendance % ascending (danger first)
+                        sorted.sort((a, b) {
                           // Subjects with 0 classes go to the bottom
-                          if (a.totalClasses == 0 && b.totalClasses == 0) return 0;
+                          if (a.totalClasses == 0 && b.totalClasses == 0)
+                            return 0;
                           if (a.totalClasses == 0) return 1;
                           if (b.totalClasses == 0) return -1;
-                          return a.attendancePercentage.compareTo(b.attendancePercentage);
+                          return a.attendancePercentage.compareTo(
+                            b.attendancePercentage,
+                          );
                         });
+                      } else {
+                        // Sort alphabetically by name
+                        sorted.sort(
+                          (a, b) => a.name.toLowerCase().compareTo(
+                            b.name.toLowerCase(),
+                          ),
+                        );
+                      }
 
                       return Column(
                         children: sorted.map((subject) {
                           final hasClasses = subject.totalClasses > 0;
-                          final pct = hasClasses ? subject.attendancePercentage : 0.0;
+                          final pct = hasClasses
+                              ? subject.attendancePercentage
+                              : 0.0;
                           final safeLeaves = hasClasses
-                              ? AttendanceRepository.computeSafeLeaves(subject, threshold: threshold)
+                              ? AttendanceRepository.computeSafeLeaves(
+                                  subject,
+                                  threshold: threshold,
+                                )
                               : 0;
                           final risk = !hasClasses
-                              ? AttendanceRisk.safe  // show neutral for untouched subjects
+                              ? AttendanceRisk
+                                    .safe // show neutral for untouched subjects
                               : pct >= threshold
-                                  ? AttendanceRisk.safe
-                                  : pct >= (threshold - 3)
-                                      ? AttendanceRisk.warning
-                                      : AttendanceRisk.danger;
+                              ? AttendanceRisk.safe
+                              : pct >= (threshold - 3)
+                              ? AttendanceRisk.warning
+                              : AttendanceRisk.danger;
                           final dotColor = _colorFromHex(subject.color);
 
                           return AttendanceSubjectCard(
@@ -526,7 +586,8 @@ class _EmptySubjectsCard extends StatelessWidget {
             Opacity(
               opacity: 0.85,
               child: NeurootNetworkImage(
-                url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCGAc2fsEi31o6PdDuRC1oBoT9gJ1hvP1bw2p3t1AxUd_f6t9fb9q4ONR5jhWot8mHDR8mCmFZK2jpkwleXbgbq6W_yf_0C9qakFGZo6fnJhEK3eb5ZJZASllQ7hsgMHUhwAOKDnDxH0DfvIWdTONSgtucV1ZmZ1VWz6KBx8KGqE6rty14jS_SzE4CVXuv_bGlNeM6f_DQRkitsZp7NYujmbxrzNT6mCG7OIBcf5wHJB6HGi7RAoLZ4OX21fReh4abVUaRgGve9pqk', // Placeholder for Sprout with clipboard
+                url:
+                    'https://lh3.googleusercontent.com/aida-public/AB6AXuCGAc2fsEi31o6PdDuRC1oBoT9gJ1hvP1bw2p3t1AxUd_f6t9fb9q4ONR5jhWot8mHDR8mCmFZK2jpkwleXbgbq6W_yf_0C9qakFGZo6fnJhEK3eb5ZJZASllQ7hsgMHUhwAOKDnDxH0DfvIWdTONSgtucV1ZmZ1VWz6KBx8KGqE6rty14jS_SzE4CVXuv_bGlNeM6f_DQRkitsZp7NYujmbxrzNT6mCG7OIBcf5wHJB6HGi7RAoLZ4OX21fReh4abVUaRgGve9pqk', // Placeholder for Sprout with clipboard
                 height: 140,
                 fit: BoxFit.contain,
                 errorIcon: Icons.assignment_outlined,

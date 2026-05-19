@@ -193,6 +193,14 @@ class AttendanceRepository {
     final present = subject.presentClasses;
     final t = threshold / 100;
     if (t == 0) return 0;
-    return ((present - t * total) / t).floor();
+    
+    if (present >= t * total) {
+      // Safe to miss: present / t - total
+      return ((present - t * total) / t).floor();
+    } else {
+      // Need to attend: ceil((t * total - present) / (1 - t))
+      final recovery = ((t * total - present) / (1 - t)).ceil();
+      return -recovery;
+    }
   }
 }
