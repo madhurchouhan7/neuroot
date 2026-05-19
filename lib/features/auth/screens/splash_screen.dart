@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
-import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
 import 'dart:math' as math;
 
 /// Splash screen — shows the brand animation only.
@@ -65,55 +64,73 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Mascot circle
+                // Mascot Card
                 Container(
-                  width: 192,
-                  height: 192,
+                  width: 208,
+                  height: 208,
                   margin: const EdgeInsets.only(bottom: 32),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(32),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.textSecondary.withValues(alpha: 0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                        color: const Color(0xFFEEDDCC).withValues(alpha: 0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
-                  child: NeurootNetworkImage(
-                    url:
-                        'https://lh3.googleusercontent.com/aida-public/AB6AXuBpenh9mGN5KX_c-iZXTTC0dK5E7y6K4xiPoSAoY_OuLc9JTwzkVgJN2ONpe-u7c7eBdTvlwu_GYs6t3n74Efqlgc_3LlmIsoqo9gDDG0SWUrGxnIPzgGUiUdyPUle5gO8sYjI8NIbDQAB4IrnevgwTqrP1EpuGbb1E1thQqP6LCA22lp7Ho7qPtHn2sIJ83rpthikwQ0BsnSHx-enf0ko9i6v7oPDhZ8l4QopTeY_xwDvY4ETc_F91wb7GN58rfJlTdZFJkvYSXmg',
-                    width: 160,
-                    height: 160,
+                  padding: const EdgeInsets.all(24),
+                  child: Image.asset(
+                    'assets/mascot/image.png',
                     fit: BoxFit.contain,
-                    errorIcon: Icons.eco,
-                    placeholderColor: Colors.transparent,
                   ),
                 ),
 
                 // App Name
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      'neur',
+                      'bl',
                       style: AppTypography.titleXL(
                         color: AppColors.textPrimary,
+                      ).copyWith(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
                       ),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 2),
-                      child: Icon(
+                    const SizedBox(width: 4),
+                    // Gold leaf outline logo
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        border: Border.all(
+                          color: const Color(0xFFF5C542),
+                          width: 3.5,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
                         Icons.eco,
-                        color: AppColors.primaryContainer,
-                        size: 32,
+                        color: Color(0xFFF5C542),
+                        size: 20,
                       ),
                     ),
+                    const SizedBox(width: 4),
                     Text(
-                      'ot',
+                      'm',
                       style: AppTypography.titleXL(
                         color: AppColors.textPrimary,
+                      ).copyWith(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
                       ),
                     ),
                   ],
@@ -124,7 +141,10 @@ class _SplashScreenState extends State<SplashScreen>
                 Text(
                   'your cozy study companion',
                   style: AppTypography.supportiveMedium(
-                    color: AppColors.textSecondary,
+                    color: const Color(0xFF7F7662),
+                  ).copyWith(
+                    fontSize: 14,
+                    letterSpacing: 0.5,
                   ),
                 ),
                 const SizedBox(height: 64),
@@ -142,7 +162,7 @@ class _SplashScreenState extends State<SplashScreen>
                 width: 192,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: AppColors.softGrey,
+                  color: const Color(0xFFECEAE5),
                   borderRadius: BorderRadius.circular(3),
                 ),
                 child: AnimatedBuilder(
@@ -154,12 +174,12 @@ class _SplashScreenState extends State<SplashScreen>
                         width: 192 * (0.1 + (_loadingCtrl.value * 0.8)),
                         height: 6,
                         decoration: BoxDecoration(
-                          color: AppColors.primaryContainer,
+                          color: const Color(0xFFF5C542),
                           borderRadius: BorderRadius.circular(3),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primaryContainer.withValues(
-                                alpha: 0.6,
+                              color: const Color(0xFFF5C542).withValues(
+                                alpha: 0.4,
                               ),
                               blurRadius: 8,
                             ),

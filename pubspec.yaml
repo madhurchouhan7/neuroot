@@ -66,6 +66,8 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   riverpod_generator: ^4.0.0+1
   build_runner: ^2.15.0
+  flutter_native_splash: ^2.4.0
+  flutter_launcher_icons: ^0.13.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -80,6 +82,8 @@ flutter:
 
   assets:
     - .env
+    - assets/mascot/
+    - assets/icon/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -12,7 +12,6 @@ import 'package:neuroot/features/academic/widgets/attendance_heatmap.dart';
 import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
 import 'package:neuroot/features/settings/providers/settings_provider.dart';
 import 'package:neuroot/core/models/attendance_record_model.dart';
-import 'package:neuroot/shared/widgets/neuroot_widgets.dart';
 
 final sortByRiskProvider = StateProvider<bool>((ref) => false);
 

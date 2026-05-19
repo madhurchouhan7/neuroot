@@ -1,0 +1,6 @@
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/neuroot_logo.png"
+  adaptive_icon_background: "#FAF6F0"
+  adaptive_icon_foreground: "assets/icon/neuroot_logo.png"
