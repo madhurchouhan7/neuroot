@@ -4,7 +4,6 @@ import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:neuroot/features/auth/providers/auth_provider.dart';
 import 'package:neuroot/features/auth/providers/user_provider.dart';
 import 'package:neuroot/features/academic/providers/attendance_provider.dart';
 import 'package:neuroot/features/academic/providers/insights_provider.dart';
@@ -21,48 +20,29 @@ class ProfileScreen extends ConsumerWidget {
     final user = userState.asData?.value;
     final settings = ref.watch(settingsProvider);
 
-    Future<void> handleSignOut() async {
-      final confirm = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          backgroundColor: AppColors.white,
-          title: Text(
-            'Sign Out',
-            style: AppTypography.titleMedium(color: const Color(0xFF2B2B2B)),
-          ),
+    void handleToggleCosmetic(String id) {
+      final currentlyEquipped = user?.equippedCosmetic ?? '';
+      final nextEquipped = currentlyEquipped == id ? '' : id;
+      ref.read(userNotifierProvider.notifier).updateProfile({
+        'equippedCosmetic': nextEquipped,
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
           content: Text(
-            'Are you sure you want to sign out?',
-            style: AppTypography.bodyMedium(color: const Color(0xFF5A5A5A)),
+            nextEquipped.isNotEmpty
+                ? 'Equipped cosmetic! Sprout looks cozy 🎓'
+                : 'Unequipped cosmetic 🌱',
+            style: AppTypography.bodyMedium(color: AppColors.white),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(
-                'Cancel',
-                style: AppTypography.bodyMedium(
-                  color: AppColors.primaryContainer,
-                ).copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(
-                'Sign Out',
-                style: AppTypography.bodyMedium(
-                  color: Colors.red,
-                ).copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
+          backgroundColor: AppColors.sageDark,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
         ),
       );
-
-      if (confirm == true) {
-        ref.read(authNotifierProvider.notifier).signOut();
-      }
     }
 
     final level = user?.level ?? 1;
@@ -99,7 +79,8 @@ class ProfileScreen extends ConsumerWidget {
     String statusBadge;
 
     if (!settings.sproutAIEnabled) {
-      bubbleMessage = '"Sprout\'s AI Coach is turned off. You need to turn it ON from Settings! 🤖🌱"';
+      bubbleMessage =
+          '"Sprout\'s AI Coach is turned off. You need to turn it ON from Settings! 🤖🌱"';
       statusBadge = 'AI Coach Offline 📴';
     } else if (completedToday > 0 &&
         totalClassesToday > 0 &&
@@ -155,10 +136,6 @@ class ProfileScreen extends ConsumerWidget {
             ),
             tooltip: 'Settings',
             onPressed: () => context.push('/settings'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: AppColors.primaryContainer),
-            onPressed: handleSignOut,
           ),
         ],
       ),
@@ -321,10 +298,38 @@ class ProfileScreen extends ConsumerWidget {
                     crossAxisSpacing: 12,
                     childAspectRatio: 1.5,
                     children: [
-                      _buildCosmetic('🎓', 'Scholar Hat', false),
-                      _buildCosmetic('☀️', 'Sunny Room', false),
-                      _buildCosmetic('🌙', 'Night Mode', true),
-                      _buildCosmetic('👑', 'Gold Crown', true),
+                      _buildCosmetic(
+                        'scholar_hat',
+                        '🎓',
+                        'Scholar Hat',
+                        (user?.level ?? 1) < 1,
+                        (user?.equippedCosmetic ?? '') == 'scholar_hat',
+                        () => handleToggleCosmetic('scholar_hat'),
+                      ),
+                      _buildCosmetic(
+                        'sunny_room',
+                        '☀️',
+                        'Sunny Room',
+                        (user?.level ?? 1) < 2,
+                        (user?.equippedCosmetic ?? '') == 'sunny_room',
+                        () => handleToggleCosmetic('sunny_room'),
+                      ),
+                      _buildCosmetic(
+                        'night_mode',
+                        '🌙',
+                        'Night Mode',
+                        (user?.level ?? 1) < 3,
+                        (user?.equippedCosmetic ?? '') == 'night_mode',
+                        () => handleToggleCosmetic('night_mode'),
+                      ),
+                      _buildCosmetic(
+                        'gold_crown',
+                        '👑',
+                        'Gold Crown',
+                        (user?.streak ?? 0) < 3,
+                        (user?.equippedCosmetic ?? '') == 'gold_crown',
+                        () => handleToggleCosmetic('gold_crown'),
+                      ),
                     ],
                   ),
 
@@ -407,60 +412,92 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCosmetic(String emoji, String title, bool isLocked) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isLocked
-            ? AppColors.white.withValues(alpha: 0.5)
-            : AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
+  Widget _buildCosmetic(
+    String id,
+    String emoji,
+    String title,
+    bool isLocked,
+    bool isEquipped,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: isLocked ? null : onTap,
+      child: Container(
+        decoration: BoxDecoration(
           color: isLocked
-              ? const Color(0xFFF5EFE3).withValues(alpha: 0.5)
-              : const Color(0xFFF5EFE3),
-        ),
-        boxShadow: isLocked
-            ? null
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-      ),
-      child: Stack(
-        children: [
-          if (isLocked)
-            const Positioned(
-              top: 8,
-              right: 8,
-              child: Icon(Icons.lock, size: 16, color: Color(0xFF5A5A5A)),
-            ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  emoji,
-                  style: TextStyle(
-                    fontSize: 28,
-                    color: isLocked ? Colors.grey : null,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  title,
-                  style: AppTypography.bodySmall(
-                    color: isLocked
-                        ? const Color(0xFF5A5A5A)
-                        : const Color(0xFF1B1C1C),
-                  ).copyWith(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
+              ? AppColors.white.withValues(alpha: 0.5)
+              : (isEquipped ? const Color(0xFFF0EBE3) : AppColors.white),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isLocked
+                ? const Color(0xFFF5EFE3).withValues(alpha: 0.5)
+                : (isEquipped
+                      ? AppColors.primaryContainer
+                      : const Color(0xFFF5EFE3)),
+            width: isEquipped ? 2 : 1,
           ),
-        ],
+          boxShadow: isLocked
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+        ),
+        child: Stack(
+          children: [
+            if (isLocked)
+              const Positioned(
+                top: 8,
+                right: 8,
+                child: Icon(Icons.lock, size: 16, color: Color(0xFF5A5A5A)),
+              )
+            else if (isEquipped)
+              const Positioned(
+                top: 8,
+                right: 8,
+                child: Icon(
+                  Icons.check_circle,
+                  size: 18,
+                  color: AppColors.sageDark,
+                ),
+              ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    emoji,
+                    style: TextStyle(
+                      fontSize: 28,
+                      color: isLocked ? Colors.grey : null,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    title,
+                    style: AppTypography.bodySmall(
+                      color: isLocked
+                          ? const Color(0xFF5A5A5A)
+                          : const Color(0xFF1B1C1C),
+                    ).copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  if (isEquipped) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      'EQUIPPED',
+                      style: AppTypography.labelSmall(
+                        color: AppColors.sageDark,
+                      ).copyWith(fontSize: 8, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

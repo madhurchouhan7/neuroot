@@ -5,6 +5,8 @@ import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/features/academic/providers/attendance_provider.dart';
 
+import 'package:neuroot/shared/widgets/neuroot_widgets.dart';
+
 class AttendanceHeatmap extends ConsumerWidget {
   const AttendanceHeatmap({super.key});
 
@@ -13,14 +15,7 @@ class AttendanceHeatmap extends ConsumerWidget {
     final recordsAsync = ref.watch(monthAttendanceProvider);
 
     return recordsAsync.when(
-      loading: () => Container(
-        height: 180,
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: const Center(child: CircularProgressIndicator(color: AppColors.sageDark)),
-      ),
+      loading: () => const ShimmerCardLoading(height: 180, borderRadius: 20),
       error: (e, _) => const SizedBox.shrink(),
       data: (records) => _HeatmapContent(records: records),
     );

@@ -4,6 +4,8 @@ import 'package:neuroot/core/theme/app_theme.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/shared/widgets/bounce_button.dart';
 import 'package:neuroot/shared/widgets/ambient_motion.dart';
+import 'package:shimmer/shimmer.dart';
+
 // ─── NeurootCard ──────────────────────────────────────────────────────────────
 /// The primary surface container. Soft shadow, rounded corners, no borders.
 class NeurootCard extends StatelessWidget {
@@ -25,7 +27,8 @@ class NeurootCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = color ?? (isDark ? AppColors.nightCard : AppColors.warmWhite);
+    final bgColor =
+        color ?? (isDark ? AppColors.nightCard : AppColors.warmWhite);
 
     return BounceButton(
       onTap: onTap,
@@ -92,20 +95,17 @@ class NeurootButton extends StatelessWidget {
               SizedBox(
                 width: 18,
                 height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: fg,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2, color: fg),
               ),
             ] else ...[
-              if (icon != null) ...[
-                icon!,
-                const SizedBox(width: 8),
-              ],
+              if (icon != null) ...[icon!, const SizedBox(width: 8)],
               Text(
                 label,
-                style: (isSmall ? AppTypography.buttonMedium : AppTypography.buttonLarge)
-                    .call(color: fg),
+                style:
+                    (isSmall
+                            ? AppTypography.buttonMedium
+                            : AppTypography.buttonLarge)
+                        .call(color: fg),
               ),
             ],
           ],
@@ -143,7 +143,10 @@ class NeurootSecondaryButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (icon != null) ...[icon!, const SizedBox(width: 8)],
-            Text(label, style: AppTypography.buttonMedium(color: AppColors.sageDark)),
+            Text(
+              label,
+              style: AppTypography.buttonMedium(color: AppColors.sageDark),
+            ),
           ],
         ),
       ),
@@ -177,10 +180,7 @@ class SproutSpeechBubble extends StatelessWidget {
         ),
         border: Border.all(color: AppColors.sage.withValues(alpha: 0.3)),
       ),
-      child: Text(
-        message,
-        style: AppTypography.mascotSpeech(),
-      ),
+      child: Text(message, style: AppTypography.mascotSpeech()),
     );
   }
 }
@@ -246,10 +246,7 @@ class StatusChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (leading != null) ...[
-            leading!,
-            const SizedBox(width: 4),
-          ],
+          if (leading != null) ...[leading!, const SizedBox(width: 4)],
           Text(
             label,
             style: AppTypography.labelSmall(
@@ -380,10 +377,19 @@ class EmptyState extends StatelessWidget {
             BreathingWidget(
               scaleTarget: 1.05,
               child: Text(emoji, style: const TextStyle(fontSize: 64)),
-            ),            const SizedBox(height: AppTheme.spacingMD),
-            Text(title, style: AppTypography.titleMedium(), textAlign: TextAlign.center),
+            ),
+            const SizedBox(height: AppTheme.spacingMD),
+            Text(
+              title,
+              style: AppTypography.titleMedium(),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: AppTheme.spacingSM),
-            Text(message, style: AppTypography.bodyMedium(), textAlign: TextAlign.center),
+            Text(
+              message,
+              style: AppTypography.bodyMedium(),
+              textAlign: TextAlign.center,
+            ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: AppTheme.spacingLG),
               SizedBox(
@@ -398,3 +404,120 @@ class EmptyState extends StatelessWidget {
   }
 }
 
+// ─── Shimmer Elements ─────────────────────────────────────────────────────────
+
+/// A simple custom shimmer box mapped to Neuroot's warm aesthetic.
+class ShimmerPlaceholder extends StatelessWidget {
+  final double width;
+  final double height;
+  final double borderRadius;
+
+  const ShimmerPlaceholder({
+    super.key,
+    required this.width,
+    required this.height,
+    this.borderRadius = 12.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFEEDDCC).withValues(alpha: 0.5),
+      highlightColor: const Color(0xFFFAF6F0),
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(borderRadius),
+        ),
+      ),
+    );
+  }
+}
+
+/// Shimmer effect designed for lists.
+class ShimmerListLoading extends StatelessWidget {
+  final int count;
+  const ShimmerListLoading({super.key, this.count = 3});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: List.generate(
+        count,
+        (i) => Padding(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: Shimmer.fromColors(
+            baseColor: const Color(0xFFEEDDCC).withValues(alpha: 0.5),
+            highlightColor: const Color(0xFFFAF6F0),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 140,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: 90,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Shimmer effect designed for full cards.
+class ShimmerCardLoading extends StatelessWidget {
+  final double height;
+  final double borderRadius;
+  const ShimmerCardLoading({
+    super.key,
+    this.height = 140.0,
+    this.borderRadius = 24.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFEEDDCC).withValues(alpha: 0.5),
+      highlightColor: const Color(0xFFFAF6F0),
+      child: Container(
+        width: double.infinity,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(borderRadius),
+        ),
+      ),
+    );
+  }
+}

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:neuroot/core/services/auth_service.dart';
 import 'package:neuroot/features/auth/providers/user_provider.dart';
+import 'package:neuroot/features/onboarding/providers/onboarding_provider.dart';
 
 // ─── Service Provider ─────────────────────────────────────────────────────────
 
@@ -149,6 +150,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> signOut() async {
     await _service.signOut();
+    ref.invalidate(onboardingProvider);
     state = const AuthState();
   }
 

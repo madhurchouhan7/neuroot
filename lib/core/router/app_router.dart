@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'app_shell.dart';
 import '../../features/onboarding/screens/intro_screen.dart';
 import '../../features/onboarding/screens/setup_screen.dart';
+import '../../features/onboarding/providers/onboarding_provider.dart';
 import '../../features/emotional/screens/emotional_checkin_screen.dart';
 import '../../features/auth/screens/splash_screen.dart';
 import '../../features/auth/screens/landing_screen.dart';
@@ -76,6 +77,16 @@ GoRouter buildAppRouter(WidgetRef ref) {
               .get();
           final onboardingComplete =
               (doc.data()?['onboardingComplete'] as bool?) ?? false;
+
+          // If the user entered custom onboarding details, we MUST route them
+          // to /setup to ensure these details get successfully saved to their account.
+          final onboardingState = ref.read(onboardingProvider);
+          final hasCustomData = onboardingState.semesterName.isNotEmpty ||
+              onboardingState.timetable.isNotEmpty;
+          if (hasCustomData) {
+            return '/setup';
+          }
+
           return onboardingComplete ? '/home' : '/setup';
         } catch (_) {
           // Firestore unavailable — go home

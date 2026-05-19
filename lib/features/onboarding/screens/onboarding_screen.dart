@@ -58,7 +58,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     } else {
       // Final step (MeetSprout): mark onboarding complete → router redirects
       await ref.read(onboardingProvider.notifier).completeOnboarding();
-      if (mounted) context.go('/home');
+      if (mounted) {
+        ref.invalidate(onboardingProvider);
+        context.go('/home');
+      }
     }
   }
 
@@ -113,7 +116,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     if (confirmed == true && mounted) {
       await ref.read(onboardingProvider.notifier).completeOnboarding();
-      if (mounted) context.go('/home');
+      if (mounted) {
+        ref.invalidate(onboardingProvider);
+        context.go('/home');
+      }
     }
   }
 

@@ -4,6 +4,8 @@ import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/features/auth/providers/user_provider.dart';
 import 'package:neuroot/features/dashboard/providers/dashboard_provider.dart';
+import 'package:neuroot/features/settings/providers/settings_provider.dart';
+import 'package:neuroot/core/models/mood_log_model.dart';
 import 'package:neuroot/shared/widgets/ambient_motion.dart';
 
 class SproutCompanionCard extends ConsumerWidget {
@@ -13,6 +15,43 @@ class SproutCompanionCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeState = ref.watch(homeThemeStateProvider);
     final userState = ref.watch(userDocProvider);
+    final settings = ref.watch(settingsProvider);
+    final currentMood = ref.watch(todayMoodProvider);
+
+    String sproutEmoji = themeState.sproutEmoji;
+    String sproutStatusText = themeState.sproutStatusText;
+
+    if (!settings.sproutAIEnabled) {
+      sproutEmoji = '📴';
+      sproutStatusText = 'Sprout\'s AI Coach is offline. Go to settings to activate it!';
+    } else if (currentMood != null) {
+      switch (currentMood) {
+        case MoodType.happy:
+          sproutEmoji = '😊';
+          sproutStatusText = 'Woohoo! Let\'s ride this wave of positive energy and crush our goals today! 🚀';
+          break;
+        case MoodType.calm:
+          sproutEmoji = '😌';
+          sproutStatusText = 'A quiet, steady mind goes a long way. What beautiful topic shall we focus on today? 🧘';
+          break;
+        case MoodType.focused:
+          sproutEmoji = '🎯';
+          sproutStatusText = 'Locked in! I love seeing you in full study mode. Let\'s make every minute count! ⚡';
+          break;
+        case MoodType.tired:
+          sproutEmoji = '😴';
+          sproutStatusText = 'I see those heavy eyelids. Let\'s tackle a quick, easy task first, or take a gentle stretching break! 🛌';
+          break;
+        case MoodType.overwhelmed:
+          sproutEmoji = '😰';
+          sproutStatusText = 'Take a deep breath. 🌬️ You don\'t have to do it all at once. Let\'s break one big task into 15-minute wins right now! 🌱';
+          break;
+        case MoodType.anxious:
+          sproutEmoji = '😟';
+          sproutStatusText = 'It\'s okay to feel this way. I\'m right here with you. Let\'s do a short 5-minute warm-up session together! 🍵';
+          break;
+      }
+    }
     
     final user = userState.asData?.value;
     final level = user?.level ?? 1;
@@ -49,20 +88,44 @@ class SproutCompanionCard extends ConsumerWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Animated Sprout Emoji avatar
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: themeState.accentColor.withValues(alpha: 0.08),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      themeState.sproutEmoji,
-                      style: const TextStyle(fontSize: 34),
+                // Animated Sprout Emoji avatar with equipped cosmetic overlay
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: themeState.accentColor.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          sproutEmoji,
+                          style: const TextStyle(fontSize: 34),
+                        ),
+                      ),
                     ),
-                  ),
+                    if (user?.equippedCosmetic != null && user!.equippedCosmetic.isNotEmpty)
+                      Positioned(
+                        top: -6,
+                        right: -6,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(color: Colors.black12, blurRadius: 4),
+                            ],
+                          ),
+                          child: Text(
+                            _getCosmeticEmoji(user.equippedCosmetic),
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(width: 12),
                 
@@ -80,7 +143,7 @@ class SproutCompanionCard extends ConsumerWidget {
                       ),
                     ),
                     child: Text(
-                      themeState.sproutStatusText,
+                      sproutStatusText,
                       style: AppTypography.bodyMedium(
                         color: themeState.isDark ? AppColors.textSecondary : const Color(0xFF4A4A4A),
                       ).copyWith(fontSize: 13, height: 1.35),
@@ -165,5 +228,20 @@ class SproutCompanionCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  String _getCosmeticEmoji(String id) {
+    switch (id) {
+      case 'scholar_hat':
+        return '🎓';
+      case 'sunny_room':
+        return '☀️';
+      case 'night_mode':
+        return '🌙';
+      case 'gold_crown':
+        return '👑';
+      default:
+        return '🌱';
+    }
   }
 }

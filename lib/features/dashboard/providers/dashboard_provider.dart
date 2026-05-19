@@ -73,7 +73,7 @@ final userGreetingProvider = Provider<String>((ref) {
     emoji = '💤';
   }
 
-  return '$greeting, $name $emoji';
+  return '$greeting, \n$name $emoji';
 });
 
 // ─── Exam Week Mode ────────────────────────────────────────────────────────────
@@ -82,13 +82,16 @@ final isExamWeekProvider = Provider<bool>((ref) {
   final tasks = ref.watch(tasksStreamProvider).asData?.value ?? [];
   final now = ref.watch(timeTickerProvider).asData?.value ?? DateTime.now();
   final startOfToday = DateTime(now.year, now.month, now.day);
-  final thresholdDate = startOfToday.add(const Duration(days: 3, hours: 23, minutes: 59, seconds: 59));
+  final thresholdDate = startOfToday.add(
+    const Duration(days: 3, hours: 23, minutes: 59, seconds: 59),
+  );
 
   return tasks.any(
     (t) =>
         t.type == TaskType.exam &&
         !t.isCompleted &&
-        (t.dueDate.isAfter(startOfToday) || t.dueDate.isAtSameMomentAs(startOfToday)) &&
+        (t.dueDate.isAfter(startOfToday) ||
+            t.dueDate.isAtSameMomentAs(startOfToday)) &&
         t.dueDate.isBefore(thresholdDate),
   );
 });
@@ -127,8 +130,14 @@ class HomeThemeState {
   });
 }
 
+final isBurnoutModeProvider = Provider<bool>((ref) {
+  final currentMood = ref.watch(todayMoodProvider);
+  return currentMood == MoodType.overwhelmed || currentMood == MoodType.tired;
+});
+
 final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
   final isExamWeek = ref.watch(isExamWeekProvider);
+  final isBurnoutMode = ref.watch(isBurnoutModeProvider);
   final user = ref.watch(userDocProvider).asData?.value;
   final name = user?.displayName.split(' ').first ?? 'Student';
   final settings = ref.watch(settingsProvider);
@@ -139,7 +148,7 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
       gradientColors: [const Color(0xFFFFE4E1), const Color(0xFFFFF0F5)],
       sproutEmoji: '🌸🌱',
       sproutStatusText: 'Enjoying the spring breeze. Let\'s bloom today!',
-      greetingText: 'Happy Spring, $name 🌸',
+      greetingText: 'Happy Spring, \n$name 🌸',
       backgroundColor: const Color(0xFFFFF0F5),
       cardColor: const Color(0xFFFFFFFF),
       textColor: const Color(0xFF8B1A1A),
@@ -150,12 +159,26 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
       gradientColors: [const Color(0xFF2B2121), const Color(0xFF1F1A1A)],
       sproutEmoji: '🕰️🌱',
       sproutStatusText: 'The library is quiet. A perfect time for deep work.',
-      greetingText: 'Good morrow, $name ☕',
+      greetingText: 'Good morrow, \n$name ☕',
       backgroundColor: const Color(0xFF1F1A1A),
       cardColor: const Color(0xFF2C2424),
       textColor: const Color(0xFFD4C4A8),
       accentColor: const Color(0xFF8B4513),
       isDark: true,
+    );
+  }
+
+  if (isBurnoutMode) {
+    return HomeThemeState(
+      gradientColors: [const Color(0xFFE2EBE9), const Color(0xFFF5F8F7)],
+      sproutEmoji: '🧘🌱',
+      sproutStatusText:
+          'I sense you\'re feeling a bit overwhelmed or tired. Let\'s slow things down today. No rush, one small step at a time! 🧘🌱',
+      greetingText: 'Take it easy, \n$name 🌿',
+      backgroundColor: const Color(0xFFF5F8F7),
+      cardColor: const Color(0xFFFFFFFF),
+      textColor: const Color(0xFF2C4438),
+      accentColor: const Color(0xFF6B8E7D),
     );
   }
 
@@ -168,7 +191,7 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
       sproutEmoji: '🤓🌱',
       sproutStatusText:
           'Exam week is close! Let\'s tackle one small topic at a time.',
-      greetingText: 'Stay focused, $name 🔥',
+      greetingText: 'Stay focused, \n$name 🔥',
       backgroundColor: const Color(0xFFFBF9FF),
       cardColor: const Color(0xFFFFFDF8),
       textColor: const Color(0xFF4A346E),
@@ -183,7 +206,7 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
       sproutEmoji: '☕🌱',
       sproutStatusText:
           'Morning! Ready to start the day with a gentle focus session?',
-      greetingText: 'Good morning, $name ☀️',
+      greetingText: 'Good morning, \n$name ☀️',
       backgroundColor: const Color(0xFFF8F5F0),
       cardColor: const Color(0xFFFFFDF8),
       textColor: const Color(0xFF2B2B2B),
@@ -195,7 +218,7 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
       gradientColors: [const Color(0xFFE5EFE9), const Color(0xFFF8F5F0)],
       sproutEmoji: '📚🌱',
       sproutStatusText: 'Doing great! Let\'s keep steady and consistent.',
-      greetingText: 'Good afternoon, $name 🌤️',
+      greetingText: 'Good afternoon, \n$name 🌤️',
       backgroundColor: const Color(0xFFF8F5F0),
       cardColor: const Color(0xFFFFFDF8),
       textColor: const Color(0xFF2B2B2B),
@@ -211,7 +234,7 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
       sproutEmoji: '🍵🌱',
       sproutStatusText:
           'Evening check-in! Wind down or do a light study review.',
-      greetingText: 'Good evening, $name 🌙',
+      greetingText: 'Good evening, \n$name 🌙',
       backgroundColor: const Color(0xFFF8F5F0),
       cardColor: const Color(0xFFFFFDF8),
       textColor: const Color(0xFF2B2B2B),
@@ -224,7 +247,7 @@ final homeThemeStateProvider = Provider<HomeThemeState>((ref) {
       sproutEmoji: '😴🌱',
       sproutStatusText:
           'You\'ve worked hard. Time to rest your mind and sleep.',
-      greetingText: 'Good night, $name 💤',
+      greetingText: 'Good night, \n$name 💤',
       backgroundColor: const Color(0xFF161616),
       cardColor: const Color(0xFF222222),
       textColor: const Color(0xFFECEAE5),

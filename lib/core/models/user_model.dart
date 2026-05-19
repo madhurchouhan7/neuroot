@@ -13,6 +13,9 @@ class UserModel {
   final int streak;
   final DateTime? lastActiveDate;
 
+  final String equippedCosmetic;
+  final List<String> unlockedCosmetics;
+
   const UserModel({
     required this.uid,
     required this.displayName,
@@ -24,6 +27,8 @@ class UserModel {
     this.level = 1,
     this.streak = 0,
     this.lastActiveDate,
+    this.equippedCosmetic = '',
+    this.unlockedCosmetics = const ['scholar_hat', 'sunny_room'],
   });
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
@@ -39,6 +44,8 @@ class UserModel {
       level: data['level'] as int? ?? 1,
       streak: data['streak'] as int? ?? 0,
       lastActiveDate: (data['lastActiveDate'] as Timestamp?)?.toDate(),
+      equippedCosmetic: data['equippedCosmetic'] as String? ?? '',
+      unlockedCosmetics: List<String>.from(data['unlockedCosmetics'] ?? ['scholar_hat', 'sunny_room']),
     );
   }
 
@@ -53,6 +60,8 @@ class UserModel {
         'streak': streak,
         'lastActiveDate':
             lastActiveDate != null ? Timestamp.fromDate(lastActiveDate!) : null,
+        'equippedCosmetic': equippedCosmetic,
+        'unlockedCosmetics': unlockedCosmetics,
       };
 
   UserModel copyWith({
@@ -65,6 +74,8 @@ class UserModel {
     int? level,
     int? streak,
     DateTime? lastActiveDate,
+    String? equippedCosmetic,
+    List<String>? unlockedCosmetics,
   }) =>
       UserModel(
         uid: uid,
@@ -77,5 +88,7 @@ class UserModel {
         level: level ?? this.level,
         streak: streak ?? this.streak,
         lastActiveDate: lastActiveDate ?? this.lastActiveDate,
+        equippedCosmetic: equippedCosmetic ?? this.equippedCosmetic,
+        unlockedCosmetics: unlockedCosmetics ?? this.unlockedCosmetics,
       );
 }

@@ -11,6 +11,8 @@ import 'package:neuroot/features/academic/widgets/overall_attendance_card.dart';
 import 'package:neuroot/features/academic/widgets/attendance_heatmap.dart';
 import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
 import 'package:neuroot/features/settings/providers/settings_provider.dart';
+import 'package:neuroot/core/models/attendance_record_model.dart';
+import 'package:neuroot/shared/widgets/neuroot_widgets.dart';
 
 final sortByRiskProvider = StateProvider<bool>((ref) => false);
 
@@ -225,6 +227,16 @@ class AttendanceScreen extends ConsumerWidget {
                         );
                       }
 
+                      final hasNoClassesLogged = subjects.every(
+                        (s) => s.totalClasses == 0,
+                      );
+                      if (hasNoClassesLogged) {
+                        return _EmptyAttendanceLogCard(
+                          onMarkQuickly: () =>
+                              _showQuickMarkSheet(context, ref, subjects),
+                        );
+                      }
+
                       final sorted = [...subjects];
                       if (sortByRisk) {
                         // Sort by attendance % ascending (danger first)
@@ -301,6 +313,23 @@ class AttendanceScreen extends ConsumerWidget {
           ),
         ],
       ),
+      floatingActionButton: subjectsAsync.when(
+        data: (subjects) {
+          if (subjects.isEmpty) return null;
+          return FloatingActionButton.extended(
+            onPressed: () => _showQuickMarkSheet(context, ref, subjects),
+            backgroundColor: AppColors.primaryContainer,
+            foregroundColor: AppColors.textPrimary,
+            icon: const Icon(Icons.check_circle_outline),
+            label: Text(
+              'Mark Today',
+              style: AppTypography.buttonMedium(color: AppColors.textPrimary),
+            ),
+          );
+        },
+        loading: () => null,
+        error: (_, __) => null,
+      ),
     );
   }
 
@@ -311,6 +340,217 @@ class AttendanceScreen extends ConsumerWidget {
     } catch (_) {
       return AppColors.sageDark;
     }
+  }
+
+  void _showQuickMarkSheet(
+    BuildContext context,
+    WidgetRef ref,
+    List<dynamic> subjects,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            left: 20,
+            right: 20,
+            top: 24,
+          ),
+          decoration: const BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE0D8D0),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Mark Today\'s Attendance 📝',
+                        style: AppTypography.titleMedium(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Quickly update attendance for today\'s classes',
+                        style: AppTypography.bodySmall(
+                          color: const Color(0xFF8B8070),
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Color(0xFF4E4634)),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Flexible(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    children: subjects.map((subj) {
+                      final dotColor = _colorFromHex(subj.color);
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9F7F1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFF0EBE3)),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: dotColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    subj.name,
+                                    style: AppTypography.bodyMedium(
+                                      color: AppColors.textPrimary,
+                                    ).copyWith(fontWeight: FontWeight.bold),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    subj.code.isEmpty ? 'No code' : subj.code,
+                                    style: AppTypography.labelSmall(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+
+                            // Quick Status Buttons
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildQuickBtn(
+                                  label: 'Present',
+                                  activeColor: const Color(0xFFE8F5E9),
+                                  textColor: const Color(0xFF2E7D32),
+                                  borderActiveColor: const Color(0xFF81C784),
+                                  onTap: () {
+                                    ref
+                                        .read(
+                                          attendanceNotifierProvider.notifier,
+                                        )
+                                        .markAttendance(
+                                          subjectId: subj.id,
+                                          date: DateTime.now(),
+                                          status: AttendanceStatus.present,
+                                        );
+                                  },
+                                ),
+                                const SizedBox(width: 6),
+                                _buildQuickBtn(
+                                  label: 'Absent',
+                                  activeColor: const Color(0xFFFFEBEE),
+                                  textColor: const Color(0xFFC62828),
+                                  borderActiveColor: const Color(0xFFEF5350),
+                                  onTap: () {
+                                    ref
+                                        .read(
+                                          attendanceNotifierProvider.notifier,
+                                        )
+                                        .markAttendance(
+                                          subjectId: subj.id,
+                                          date: DateTime.now(),
+                                          status: AttendanceStatus.absent,
+                                        );
+                                  },
+                                ),
+                                const SizedBox(width: 6),
+                                _buildQuickBtn(
+                                  label: 'Cancel',
+                                  activeColor: const Color(0xFFFFF3E0),
+                                  textColor: const Color(0xFFE65100),
+                                  borderActiveColor: const Color(0xFFFFB74D),
+                                  onTap: () {
+                                    ref
+                                        .read(
+                                          attendanceNotifierProvider.notifier,
+                                        )
+                                        .markAttendance(
+                                          subjectId: subj.id,
+                                          date: DateTime.now(),
+                                          status: AttendanceStatus.cancelled,
+                                        );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildQuickBtn({
+    required String label,
+    required Color activeColor,
+    required Color textColor,
+    required Color borderActiveColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: activeColor.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: borderActiveColor.withValues(alpha: 0.3)),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.labelSmall(
+            color: textColor,
+          ).copyWith(fontWeight: FontWeight.bold, fontSize: 10),
+        ),
+      ),
+    );
   }
 
   void _showAddSubjectSheet(BuildContext context, WidgetRef ref) {
@@ -587,7 +827,7 @@ class _EmptySubjectsCard extends StatelessWidget {
               opacity: 0.85,
               child: NeurootNetworkImage(
                 url:
-                    'https://lh3.googleusercontent.com/aida-public/AB6AXuCGAc2fsEi31o6PdDuRC1oBoT9gJ1hvP1bw2p3t1AxUd_f6t9fb9q4ONR5jhWot8mHDR8mCmFZK2jpkwleXbgbq6W_yf_0C9qakFGZo6fnJhEK3eb5ZJZASllQ7hsgMHUhwAOKDnDxH0DfvIWdTONSgtucV1ZmZ1VWz6KBx8KGqE6rty14jS_SzE4CVXuv_bGlNeM6f_DQRkitsZp7NYujmbxrzNT6mCG7OIBcf5wHJB6HGi7RAoLZ4OX21fReh4abVUaRgGve9pqk', // Placeholder for Sprout with clipboard
+                    'https://lh3.googleusercontent.com/aida-public/AB6AXuCGAc2fsEi31o6PdDuRC1oBoT9gJ1hvP1bw2p3t1AxUd_f6t9fb9q4ONR5jhWot8mHDR8mCmFZK2jpkwleXbgbq6W_yf_0C9qakFGZo6fnJhEK3eb5ZJZASllQ7hsgMHUhwAOKDnDxH0DfvIWdTONSgtucV1ZmZ1VWz6KBx8KGqE6rty14jS_SzE4CVXuv_bGlNeM6f_DQRkitsZp7NYujmbxrzNT6mCG7OIBcf5wHJB6HGi7RAoLZ4OX21fReh4abVUaRgGve9pqk',
                 height: 140,
                 fit: BoxFit.contain,
                 errorIcon: Icons.assignment_outlined,
@@ -596,12 +836,12 @@ class _EmptySubjectsCard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'No attendance tracked yet',
+              'No subjects tracked yet',
               style: AppTypography.titleSmall(color: AppColors.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
-              'Mark your first class today and Sprout\nwill start tracking your progress.',
+              'Create your first subject today and Sprout\nwill start tracking your academic progress.',
               style: AppTypography.bodyMedium(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
@@ -613,12 +853,61 @@ class _EmptySubjectsCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                'Mark Today\'s Classes →',
+                'Create a Subject →',
                 style: AppTypography.buttonMedium(color: AppColors.textPrimary),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _EmptyAttendanceLogCard extends StatelessWidget {
+  const _EmptyAttendanceLogCard({required this.onMarkQuickly});
+  final VoidCallback onMarkQuickly;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE8E0D4), width: 1.5),
+      ),
+      child: Column(
+        children: [
+          const Text('📅🌱', style: TextStyle(fontSize: 48)),
+          const SizedBox(height: 16),
+          Text(
+            'No attendance logged yet',
+            style: AppTypography.titleSmall(color: AppColors.textPrimary),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Your subjects are created! Now, tap the button below to quickly mark today\'s attendance or tap any subject to manage detailed logs.',
+            style: AppTypography.bodyMedium(color: AppColors.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          GestureDetector(
+            onTap: onMarkQuickly,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.primaryContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Mark Today\'s Classes →',
+                style: AppTypography.buttonMedium(color: AppColors.textPrimary),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

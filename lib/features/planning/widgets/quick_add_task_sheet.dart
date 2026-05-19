@@ -5,6 +5,7 @@ import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/features/academic/providers/attendance_provider.dart';
 import 'package:neuroot/features/planning/providers/task_provider.dart';
+import 'package:shimmer/shimmer.dart';
 
 /// Fully wired add-task bottom sheet.
 /// Reads subjects from Firestore, saves to Firestore via [TaskNotifier].
@@ -177,12 +178,28 @@ class _QuickAddTaskSheetState extends ConsumerState<QuickAddTaskSheet> {
                   _sectionLabel('SUBJECT'),
                   const SizedBox(height: 10),
                   subjectsAsync.when(
-                    loading: () => const SizedBox(
-                        height: 32,
-                        child: Center(
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.sageDark))),
+                    loading: () => SizedBox(
+                      height: 32,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: 3,
+                        itemBuilder: (_, __) => Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: Shimmer.fromColors(
+                            baseColor: const Color(0xFFEEDDCC).withValues(alpha: 0.5),
+                            highlightColor: const Color(0xFFFAF6F0),
+                            child: Container(
+                              width: 80,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                     error: (_, __) => const SizedBox.shrink(),
                     data: (subjects) {
                       return SingleChildScrollView(

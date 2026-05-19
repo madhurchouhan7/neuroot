@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
+import 'package:neuroot/core/router/app_shell.dart';
 
 import 'package:neuroot/shared/widgets/bounce_button.dart';
 import 'package:neuroot/shared/widgets/ambient_motion.dart';
-class StartFocusButton extends StatelessWidget {
+
+class StartFocusButton extends ConsumerWidget {
   const StartFocusButton({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GlowPulseWidget(
       glowColor: AppColors.sage,
       borderRadius: BorderRadius.circular(18),
       child: BounceButton(
         onTap: () {
-          // TODO: Start focus session
+          ref.read(shellNavIndexProvider.notifier).setIndex(2);
         },
         child: Container(
           height: 56,

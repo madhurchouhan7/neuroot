@@ -7,6 +7,7 @@ import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/features/planning/providers/task_provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:neuroot/shared/widgets/neuroot_widgets.dart';
 
 class RoadmapNode {
   final String title;
@@ -336,24 +337,22 @@ class AiRoadmapDetailScreen extends ConsumerWidget {
                   roadmapAsync.when(
                     loading: () => const SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 64),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CircularProgressIndicator(
-                                color: AppColors.sageDark,
-                              ),
-                              SizedBox(height: 16),
-                              Text(
+                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ShimmerListLoading(count: 3),
+                            SizedBox(height: 16),
+                            Center(
+                              child: Text(
                                 'Sprout is generating study roadmap... 🌱',
                                 style: TextStyle(
                                   color: Color(0xFF4A4A4A),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

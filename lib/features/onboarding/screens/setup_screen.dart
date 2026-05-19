@@ -30,7 +30,10 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
     if (!mounted) return;
     if (ok) {
       await ref.read(onboardingProvider.notifier).completeOnboarding();
-      if (mounted) context.go('/home');
+      if (mounted) {
+        ref.invalidate(onboardingProvider);
+        context.go('/home');
+      }
     }
     // On failure the error snackbar is shown below via ref.listen
   }

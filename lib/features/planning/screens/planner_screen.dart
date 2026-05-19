@@ -6,6 +6,7 @@ import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/features/planning/providers/task_provider.dart';
 import 'package:neuroot/features/planning/screens/task_detail_screen.dart';
 import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
+import 'package:neuroot/shared/widgets/neuroot_widgets.dart';
 
 import '../widgets/planner_header.dart';
 import '../widgets/exam_countdown_card.dart';
@@ -165,12 +166,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                 loading: () => [
                   const SliverToBoxAdapter(
                     child: Padding(
-                      padding: EdgeInsets.all(40),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primaryContainer,
-                        ),
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                      child: ShimmerListLoading(count: 3),
                     ),
                   ),
                 ],

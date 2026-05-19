@@ -10,6 +10,7 @@ import 'package:neuroot/features/planning/providers/task_provider.dart';
 import 'package:neuroot/shared/widgets/neuroot_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:neuroot/features/settings/providers/settings_provider.dart';
+import 'package:neuroot/shared/widgets/neuroot_widgets.dart';
 
 String _getTaskCacheKey(TaskModel task) {
   return 'microtasks_${task.id.isEmpty ? task.title.hashCode : task.id}';
@@ -447,15 +448,14 @@ class _UnOverwhelmMeViewState extends ConsumerState<UnOverwhelmMeView> {
                 if (microtasksAsync != null)
                   microtasksAsync.when(
                     loading: () => const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 32),
-                      child: Center(
-                        child: Column(
-                          children: [
-                            CircularProgressIndicator(
-                              color: AppColors.sageDark,
-                            ),
-                            SizedBox(height: 12),
-                            Text(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ShimmerListLoading(count: 3),
+                          SizedBox(height: 12),
+                          Center(
+                            child: Text(
                               'Sprout is breaking task scope down... 🌱',
                               style: TextStyle(
                                 color: Color(0xFF4E4634),
@@ -463,8 +463,8 @@ class _UnOverwhelmMeViewState extends ConsumerState<UnOverwhelmMeView> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                     error: (e, stack) => Padding(

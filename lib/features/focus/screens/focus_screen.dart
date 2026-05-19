@@ -196,13 +196,15 @@ class _ActiveState extends ConsumerStatefulWidget {
   ConsumerState<_ActiveState> createState() => _ActiveStateState();
 }
 
-class _ActiveStateState extends ConsumerState<_ActiveState> {
+class _ActiveStateState extends ConsumerState<_ActiveState>
+    with WidgetsBindingObserver {
   Timer? _inactivityTimer;
   bool _showNudge = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _resetInactivityTimer();
   }
 
@@ -218,8 +220,22 @@ class _ActiveStateState extends ConsumerState<_ActiveState> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _inactivityTimer?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      if (!widget.focus.isPaused && widget.focus.phase == FocusPhase.focusing) {
+        setState(() {
+          _showNudge = true;
+        });
+        HapticFeedback.vibrate();
+      }
+    }
   }
 
   void _resetInactivityTimer() {
@@ -402,10 +418,16 @@ class _ActiveStateState extends ConsumerState<_ActiveState> {
         ? const Color(0xFFFF9E00)
         : AppColors.primaryContainer;
 
-    return Listener(
-      onPointerDown: (_) => _handleUserInteraction(),
-      child: Stack(
-        children: [
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _handleExit();
+      },
+      child: Listener(
+        onPointerDown: (_) => _handleUserInteraction(),
+        child: Stack(
+          children: [
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
@@ -444,10 +466,13 @@ class _ActiveStateState extends ConsumerState<_ActiveState> {
                               color: const Color(0xFF6B6560),
                             ).copyWith(letterSpacing: 1.5, fontSize: 11),
                           ),
-                          const Icon(
-                            Icons.settings,
-                            color: Color(0xFF6B6560),
-                            size: 20,
+                          BounceButton(
+                            onTap: () => _showQuickConfigSheet(context),
+                            child: const Icon(
+                              Icons.settings,
+                              color: Color(0xFF6B6560),
+                              size: 20,
+                            ),
                           ),
                         ],
                       ),
@@ -494,18 +519,25 @@ class _ActiveStateState extends ConsumerState<_ActiveState> {
                                 ),
                               ),
                               isBreak
-                                  ? _SwayingBreakSprout(
-                                      child: Transform.scale(
-                                        scaleX: 1.3,
-                                        scaleY: 0.85,
-                                        child: const NeurootNetworkImage(
-                                          url:
-                                              'https://lh3.googleusercontent.com/aida-public/AB6AXuBXNerXP1G6X3A4IkM1-sZgIDU5pg_S9Mqid8sIA3oJQngA4P3lp9fiM8n8UPRxAa5Pu58pUIZDfdD0Dh6v84a9mtjuHMHMUdNzPLD73L4GzSjQ77sKanNmqkLILdcft4TFhXw5NnjUj52B8uOnuADfelGENWzX68vuzHh8RGZB8FWU-d12LSgvPUrkTowzuWqowSQtA4VIexr0VF5QUfh27OnxE9mInIqSy-c2kd-pskjBvPetgDWdQ3_c7sfHG9LnmiWe1jgT53o',
-                                          fit: BoxFit.contain,
-                                          errorIcon: Icons.eco,
-                                          placeholderColor: Colors.transparent,
+                                  ? Stack(
+                                      alignment: Alignment.center,
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        _SwayingBreakSprout(
+                                          child: Transform.scale(
+                                            scaleX: 1.3,
+                                            scaleY: 0.85,
+                                            child: const NeurootNetworkImage(
+                                              url:
+                                                  'https://lh3.googleusercontent.com/aida-public/AB6AXuBXNerXP1G6X3A4IkM1-sZgIDU5pg_S9Mqid8sIA3oJQngA4P3lp9fiM8n8UPRxAa5Pu58pUIZDfdD0Dh6v84a9mtjuHMHMUdNzPLD73L4GzSjQ77sKanNmqkLILdcft4TFhXw5NnjUj52B8uOnuADfelGENWzX68vuzHh8RGZB8FWU-d12LSgvPUrkTowzuWqowSQtA4VIexr0VF5QUfh27OnxE9mInIqSy-c2kd-pskjBvPetgDWdQ3_c7sfHG9LnmiWe1jgT53o',
+                                              fit: BoxFit.contain,
+                                              errorIcon: Icons.eco,
+                                              placeholderColor: Colors.transparent,
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                        const _FloatingZzzParticles(),
+                                      ],
                                     )
                                   : const NeurootNetworkImage(
                                       url:
@@ -737,7 +769,247 @@ class _ActiveStateState extends ConsumerState<_ActiveState> {
             ),
         ],
       ),
+    ),);
+  }
+
+  void _showQuickConfigSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final activeFocus = ref.watch(focusProvider);
+            return Container(
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                color: Color(0xFF272420),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF38342F),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Focus Configuration 🛠️',
+                        style: AppTypography.titleMedium(color: AppColors.white),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Color(0xFF6B6560)),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  Text(
+                    'AMBIENT SOUND',
+                    style: AppTypography.labelSmall(
+                      color: const Color(0xFF6B6560),
+                    ).copyWith(letterSpacing: 1.5, fontSize: 11),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildQuickSoundOption(
+                        context,
+                        label: 'None',
+                        icon: Icons.volume_off_rounded,
+                        isSelected: activeFocus.ambientSound == AmbientSound.none,
+                        onTap: () => _confirmChangeMode(
+                          context,
+                          'Ambient Sound',
+                          () => ref.read(focusProvider.notifier).setAmbientSound(AmbientSound.none),
+                        ),
+                      ),
+                      _buildQuickSoundOption(
+                        context,
+                        label: 'Rain',
+                        icon: Icons.water_drop_rounded,
+                        isSelected: activeFocus.ambientSound == AmbientSound.rain,
+                        onTap: () => _confirmChangeMode(
+                          context,
+                          'Ambient Sound',
+                          () => ref.read(focusProvider.notifier).setAmbientSound(AmbientSound.rain),
+                        ),
+                      ),
+                      _buildQuickSoundOption(
+                        context,
+                        label: 'Forest',
+                        icon: Icons.park_rounded,
+                        isSelected: activeFocus.ambientSound == AmbientSound.forest,
+                        onTap: () => _confirmChangeMode(
+                          context,
+                          'Ambient Sound',
+                          () => ref.read(focusProvider.notifier).setAmbientSound(AmbientSound.forest),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Deep Focus Mode',
+                            style: AppTypography.titleMedium(color: AppColors.white).copyWith(fontSize: 14),
+                          ),
+                          Text(
+                            'Keeps screen on & mutes alerts',
+                            style: AppTypography.labelSmall(color: const Color(0xFF6B6560)).copyWith(fontSize: 10),
+                          ),
+                        ],
+                      ),
+                      Switch(
+                        value: activeFocus.isDeepFocus,
+                        activeColor: const Color(0xFFFF8A65),
+                        activeTrackColor: const Color(0xFFFF8A65).withValues(alpha: 0.2),
+                        inactiveThumbColor: const Color(0xFF6B6560),
+                        inactiveTrackColor: const Color(0xFF272420),
+                        onChanged: (val) {
+                          _confirmChangeMode(
+                            context,
+                            'Deep Focus Mode',
+                            () => ref.read(focusProvider.notifier).toggleDeepFocus(),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
+  }
+
+  Widget _buildQuickSoundOption(
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final color = isSelected ? const Color(0xFFFFB703) : const Color(0xFF6B6560);
+    final bgColor = isSelected
+        ? const Color(0xFFFFB703).withValues(alpha: 0.1)
+        : const Color(0xFF1C1A16);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 84,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFFFFB703).withValues(alpha: 0.3)
+                : const Color(0xFF38342F),
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: AppTypography.labelSmall(color: color).copyWith(fontSize: 10),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmChangeMode(
+    BuildContext context,
+    String modeName,
+    VoidCallback onConfirm,
+  ) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF272420),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: Row(
+            children: [
+              const Text('⚠️ ', style: TextStyle(fontSize: 22)),
+              Text(
+                'Change $modeName?',
+                style: const TextStyle(
+                  color: AppColors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            "Changing focus mode settings in mid-session can break your concentration state. Sprout recommends keeping settings lock active. Continue anyway? 🌱",
+            style: TextStyle(color: Color(0xFFB5AFA8), height: 1.4),
+          ),
+          actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text(
+                'Lock Settings',
+                style: TextStyle(
+                  color: AppColors.primaryContainer,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFECEC),
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text(
+                'Change',
+                style: TextStyle(
+                  color: Color(0xFFE05C5C),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true && context.mounted) {
+      onConfirm();
+      Navigator.pop(context);
+    }
   }
 
   Widget _buildControlButton(
@@ -878,16 +1150,27 @@ class _CompletedStateState extends ConsumerState<_CompletedState> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Spacer(),
-                const Text('🏆', style: TextStyle(fontSize: 72)),
-                const SizedBox(height: 24),
-                Text(
-                  'Focus Complete!',
-                  style: AppTypography.titleXL(
-                    color: AppColors.white,
-                  ).copyWith(fontSize: 32),
-                  textAlign: TextAlign.center,
-                ),
+                 const Spacer(),
+                 Stack(
+                   alignment: Alignment.center,
+                   clipBehavior: Clip.none,
+                   children: [
+                     const Text('🏆', style: TextStyle(fontSize: 72)),
+                     const Positioned.fill(
+                       child: _MajesticConfettiCelebration(),
+                     ),
+                   ],
+                 ),
+                 const SizedBox(height: 16),
+                 _buildCelebrationBadge(user?.streak ?? 1),
+                 const SizedBox(height: 24),
+                 Text(
+                   'Focus Complete!',
+                   style: AppTypography.titleXL(
+                     color: AppColors.white,
+                   ).copyWith(fontSize: 32),
+                   textAlign: TextAlign.center,
+                 ),
                 const SizedBox(height: 12),
                 Text(
                   'You focused deeply for ${widget.focus.totalSeconds ~/ 60} minutes.\nGreat job staying on track.',
@@ -1148,6 +1431,47 @@ class _CompletedStateState extends ConsumerState<_CompletedState> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCelebrationBadge(int streak) {
+    final badgeText = streak == 3
+        ? '3-Day Streak Badge! 🥉'
+        : (streak == 7
+            ? '7-Day Focused Week Badge! 🥈'
+            : (streak >= 10
+                ? '$streak-Day Study Expert Badge! 🥇'
+                : 'Level Up Star Activated! ⭐'));
+    final badgeColor = streak == 3
+        ? const Color(0xFFCD7F32)
+        : (streak == 7
+            ? const Color(0xFFC0C0C0)
+            : const Color(0xFFFFD700));
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: badgeColor,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: badgeColor.withValues(alpha: 0.1),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Text(
+        badgeText,
+        style: AppTypography.labelSmall(color: badgeColor).copyWith(
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+          letterSpacing: 0.5,
+        ),
+      ),
     );
   }
 }
@@ -1470,4 +1794,221 @@ class _SoundOption extends StatelessWidget {
       ),
     );
   }
+}
+
+class _FloatingZzzParticles extends StatefulWidget {
+  const _FloatingZzzParticles();
+
+  @override
+  State<_FloatingZzzParticles> createState() => _FloatingZzzParticlesState();
+}
+
+class _FloatingZzzParticlesState extends State<_FloatingZzzParticles>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  final List<_ZzzParticle> _particles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 8),
+    )..repeat();
+
+    _controller.addListener(() {
+      if (mounted) {
+        setState(() {
+          for (final p in _particles) {
+            p.y -= p.speed;
+            p.x += p.drift;
+            p.opacity = (p.opacity - 0.008).clamp(0.0, 1.0);
+          }
+          _particles.removeWhere((p) => p.opacity <= 0.0);
+
+          if (_particles.length < 4 && _controller.value * 100 % 25 < 1) {
+            _particles.add(
+              _ZzzParticle(
+                x: 60.0 + (15.0 * (DateTime.now().millisecond % 5)),
+                y: 80.0,
+                scale: 0.6 + (0.4 * (DateTime.now().millisecond % 3) / 3),
+                opacity: 1.0,
+                speed: 0.8 + (0.5 * (DateTime.now().millisecond % 4) / 4),
+                drift: -0.4 + (0.8 * (DateTime.now().millisecond % 2)),
+                text: 'z' * (1 + (DateTime.now().millisecond % 3)),
+              ),
+            );
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: Stack(
+          children: _particles.map((p) {
+            return Positioned(
+              left: p.x,
+              bottom: p.y,
+              child: Opacity(
+                opacity: p.opacity,
+                child: Transform.scale(
+                  scale: p.scale,
+                  child: Text(
+                    p.text.toUpperCase(),
+                    style: const TextStyle(
+                      color: Color(0xFFFFB703),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+}
+
+class _ZzzParticle {
+  double x;
+  double y;
+  double scale;
+  double opacity;
+  double speed;
+  double drift;
+  String text;
+
+  _ZzzParticle({
+    required this.x,
+    required this.y,
+    required this.scale,
+    required this.opacity,
+    required this.speed,
+    required this.drift,
+    required this.text,
+  });
+}
+
+class _MajesticConfettiCelebration extends StatefulWidget {
+  const _MajesticConfettiCelebration();
+
+  @override
+  State<_MajesticConfettiCelebration> createState() => _MajesticConfettiCelebrationState();
+}
+
+class _MajesticConfettiCelebrationState extends State<_MajesticConfettiCelebration>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  final List<_ConfettiParticle> _particles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..forward();
+
+    final random = DateTime.now().millisecond;
+    for (int i = 0; i < 45; i++) {
+      final angle = (i * 8.0) * (3.14159 / 180.0);
+      final speed = 3.0 + (3.0 * (random % 4) / 4);
+      _particles.add(
+        _ConfettiParticle(
+          x: 170.0,
+          y: 40.0,
+          dx: speed * double.parse((i % 2 == 0 ? 1 : -1).toString()) * (i % 5 / 5),
+          dy: -speed - (speed * (i % 3 / 3)),
+          color: Colors.primaries[i % Colors.primaries.length],
+          size: 6.0 + (i % 6),
+          rotation: angle,
+          opacity: 1.0,
+        ),
+      );
+    }
+
+    _controller.addListener(() {
+      if (mounted) {
+        setState(() {
+          for (final p in _particles) {
+            p.x += p.dx;
+            p.y += p.dy;
+            p.dy += 0.15;
+            p.opacity = (p.opacity - 0.015).clamp(0.0, 1.0);
+          }
+          _particles.removeWhere((p) => p.opacity <= 0.0);
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: Stack(
+          children: _particles.map((p) {
+            return Positioned(
+              left: p.x.clamp(0.0, MediaQuery.of(context).size.width),
+              top: p.y.clamp(0.0, MediaQuery.of(context).size.height),
+              child: Opacity(
+                opacity: p.opacity,
+                child: Transform.rotate(
+                  angle: p.rotation,
+                  child: Container(
+                    width: p.size,
+                    height: p.size * 1.5,
+                    decoration: BoxDecoration(
+                      color: p.color,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+}
+
+class _ConfettiParticle {
+  double x;
+  double y;
+  double dx;
+  double dy;
+  Color color;
+  double size;
+  double rotation;
+  double opacity;
+
+  _ConfettiParticle({
+    required this.x,
+    required this.y,
+    required this.dx,
+    required this.dy,
+    required this.color,
+    required this.size,
+    required this.rotation,
+    required this.opacity,
+  });
 }

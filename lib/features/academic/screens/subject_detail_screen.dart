@@ -6,6 +6,7 @@ import 'package:neuroot/core/theme/app_colors.dart';
 import 'package:neuroot/core/theme/app_typography.dart';
 import 'package:neuroot/features/academic/providers/attendance_provider.dart';
 import 'package:neuroot/features/settings/providers/settings_provider.dart';
+import 'package:neuroot/shared/widgets/neuroot_widgets.dart';
 
 /// Subject detail screen: shows attendance history, what-if calculator,
 /// and lets the user mark today's attendance.
@@ -464,13 +465,9 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                   const SizedBox(height: 12),
 
                   recordsAsync.when(
-                    loading: () => const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: CircularProgressIndicator(
-                          color: AppColors.sageDark,
-                        ),
-                      ),
+                    loading: () => const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: ShimmerListLoading(count: 3),
                     ),
                     error: (e, _) => Text(
                       'Could not load records',
